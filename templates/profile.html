@@ -1,0 +1,375 @@
+{% extends "base.html" %}
+
+{% block title %}Mi Perfil de Aspirante | Notariado El Salvador{% endblock %}
+
+{% block content %}
+<div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+    
+    <!-- Hero Profile Header -->
+    <div class="bg-gradient-to-r from-navy-950 via-navy-900 to-blue-900 rounded-3xl text-white p-6 sm:p-10 shadow-xl border border-slate-700/50 relative overflow-hidden">
+        <div class="flex flex-col md:flex-row items-center md:items-start justify-between gap-6 relative z-10">
+            <!-- Left Info -->
+            <div class="flex flex-col sm:flex-row items-center sm:items-start gap-5 text-center sm:text-left">
+                <!-- Avatar Seal -->
+                <div class="w-24 h-24 rounded-2xl bg-navy-800 border-2 border-gold-500/50 flex flex-col items-center justify-center text-gold-500 shadow-inner shrink-0 relative">
+                    <i data-lucide="user-check" class="w-12 h-12"></i>
+                    <span class="absolute -bottom-2 bg-gold-500 text-navy-950 font-black text-[10px] px-2 py-0.5 rounded-full uppercase tracking-wider">
+                        CSJ
+                    </span>
+                </div>
+                <div>
+                    <div class="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full bg-gold-500/20 text-gold-500 border border-gold-500/30 text-xs font-bold uppercase tracking-wider mb-2">
+                        <i data-lucide="scale" class="w-3.5 h-3.5"></i> Aspirante al Ejercicio de la Función Notarial
+                    </div>
+                    <h1 class="text-2xl sm:text-3xl font-extrabold tracking-tight text-white" id="profile-display-name">
+                        {{ profile.full_name }}
+                    </h1>
+                    <p class="text-slate-300 text-xs sm:text-sm mt-1 flex items-center justify-center sm:justify-start gap-1.5" id="profile-display-univ">
+                        <i data-lucide="graduation-cap" class="w-4 h-4 text-slate-400"></i>
+                        <span>{{ profile.university or 'Facultad de Jurisprudencia y Ciencias Sociales' }}</span>
+                    </p>
+                    {% if profile.lawyer_id and profile.lawyer_id != 'En trámite / Pendiente' %}
+                    <p class="text-slate-400 text-xs mt-0.5">
+                        Acuerdo / Carné de Abogado: <strong class="text-slate-200">{{ profile.lawyer_id }}</strong>
+                    </p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Right Actions: Edit Profile & License Badge -->
+            <div class="flex flex-col sm:flex-row md:flex-col items-center md:items-end gap-3 shrink-0">
+                {% if license_info %}
+                <div class="px-4 py-2 rounded-xl bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 text-xs font-bold flex items-center gap-2 shadow-sm">
+                    <i data-lucide="shield-check" class="w-4 h-4 text-emerald-400"></i>
+                    <span>Licencia Activa ({{ license_info.plan_type|upper }})</span>
+                </div>
+                {% else %}
+                <a href="{{ url_for('activar') }}" class="px-4 py-2 rounded-xl bg-gold-500 hover:bg-gold-600 text-navy-950 text-xs font-bold flex items-center gap-1.5 shadow transition-all">
+                    <i data-lucide="zap" class="w-4 h-4"></i>
+                    <span>Activar Clave Premium</span>
+                </a>
+                {% endif %}
+
+                <button 
+                    onclick="openEditModal()" 
+                    class="px-4 py-2 rounded-xl bg-navy-800 hover:bg-navy-700 border border-slate-600 text-slate-200 text-xs font-semibold flex items-center gap-2 transition-colors"
+                >
+                    <i data-lucide="edit-3" class="w-3.5 h-3.5 text-blue-400"></i>
+                    <span>Editar Datos Personales</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Decorative Pattern -->
+        <div class="absolute -right-10 -bottom-10 opacity-10 pointer-events-none">
+            <i data-lucide="landmark" class="w-72 h-72 text-white"></i>
+        </div>
+    </div>
+
+    <!-- Middle Row: Exam Target Countdown & Performance KPIs -->
+    <div class="grid lg:grid-cols-3 gap-6">
+        
+        <!-- Target Exam Date Widget (Col 1) -->
+        <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 flex flex-col justify-between">
+            <div>
+                <div class="flex items-center justify-between mb-4">
+                    <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Meta Convocatoria CSJ</span>
+                    <span class="p-2 rounded-lg bg-amber-50 text-amber-600">
+                        <i data-lucide="calendar" class="w-4 h-4"></i>
+                    </span>
+                </div>
+                <div class="text-3xl font-black text-slate-900 mb-1">
+                    {% if days_left is not none %}
+                    {{ days_left }} <span class="text-base font-bold text-slate-500">días restantes</span>
+                    {% else %}
+                    Por definir
+                    {% endif %}
+                </div>
+                <p class="text-xs text-slate-500 leading-relaxed">
+                    Fecha proyectada: <strong class="text-slate-700 font-semibold">{{ profile.target_exam_date or 'No establecida' }}</strong>
+                </p>
+            </div>
+            <div class="pt-4 border-t border-slate-100 mt-4">
+                <button onclick="openEditModal()" class="text-xs font-bold text-blue-600 hover:text-blue-800 flex items-center gap-1">
+                    <span>Modificar fecha meta</span> <i data-lucide="chevron-right" class="w-3.5 h-3.5"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- KPI Metrics Grid (Cols 2) -->
+        <div class="lg:col-span-2 grid grid-cols-2 sm:grid-cols-3 gap-4">
+            <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 flex flex-col justify-between">
+                <div class="text-xs font-bold uppercase tracking-wider text-slate-400 mb-1">Promedio General</div>
+                <div class="text-3xl font-black text-blue-700">{{ stats.avg_score }} <span class="text-sm font-normal text-slate-400">/ 10</span></div>
+                <div class="text-[11px] text-slate-500 mt-2">Escala oficial CSJ</div>
+            </div>
+
+            <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 flex flex-col justify-between">
+                <div class="text-xs font-bold uppercase tracking-wider text-slate-400 mb-1">Simulacros Hechos</div>
+                <div class="text-3xl font-black text-slate-800">{{ stats.total_attempts }}</div>
+                <div class="text-[11px] text-slate-500 mt-2">Pruebas cronometradas</div>
+            </div>
+
+            <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 flex flex-col justify-between col-span-2 sm:col-span-1">
+                <div class="text-xs font-bold uppercase tracking-wider text-slate-400 mb-1">Tasa Aprobación</div>
+                <div class="text-3xl font-black {% if stats.pass_rate >= 70 %}text-emerald-600{% else %}text-amber-600{% endif %}">
+                    {{ stats.pass_rate }}%
+                </div>
+                <div class="text-[11px] text-slate-500 mt-2">Umbral: ≥ 7.0 / 10.0</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Device & Security Card -->
+    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 sm:p-7">
+        <h2 class="text-base font-bold text-slate-900 mb-4 flex items-center justify-between">
+            <span class="flex items-center gap-2">
+                <i data-lucide="shield-alert" class="w-5 h-5 text-blue-600"></i>
+                <span>Dispositivo y Seguridad de la Licencia</span>
+            </span>
+            <span class="text-xs font-bold px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-700">
+                1 Dispositivo Autorizado
+            </span>
+        </h2>
+        
+        <div class="grid sm:grid-cols-3 gap-4 text-xs">
+            <div class="p-3.5 rounded-xl bg-slate-50 border border-slate-100">
+                <div class="text-slate-400 font-semibold mb-1 uppercase tracking-wider">Identificador de Dispositivo:</div>
+                <div class="font-mono text-slate-800 font-bold truncate select-all" title="{{ device_id }}">
+                    {{ device_id or 'Detectando equipo...' }}
+                </div>
+            </div>
+
+            <div class="p-3.5 rounded-xl bg-slate-50 border border-slate-100">
+                <div class="text-slate-400 font-semibold mb-1 uppercase tracking-wider">Clave de Licencia Activa:</div>
+                <div class="font-mono text-slate-800 font-bold select-all">
+                    {{ license_info.license_key if license_info else 'Ninguna vinculada (Prueba Gratuita)' }}
+                </div>
+            </div>
+
+            <div class="p-3.5 rounded-xl bg-slate-50 border border-slate-100">
+                <div class="text-slate-400 font-semibold mb-1 uppercase tracking-wider">Estado de Protección:</div>
+                <div class="text-emerald-700 font-bold flex items-center gap-1.5">
+                    <i data-lucide="lock" class="w-3.5 h-3.5"></i> Bloqueo de uso simultáneo activo
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent History in Profile -->
+    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+        <div class="p-5 border-b border-slate-100 flex items-center justify-between">
+            <h2 class="text-base font-bold text-slate-900 flex items-center gap-2">
+                <i data-lucide="history" class="w-4 h-4 text-blue-600"></i>
+                <span>Mis Últimos Simulacros</span>
+            </h2>
+            <a href="{{ url_for('simulador') }}" class="px-3.5 py-1.5 rounded-lg bg-blue-700 hover:bg-blue-600 text-white text-xs font-bold shadow transition-colors flex items-center gap-1.5">
+                <i data-lucide="play" class="w-3.5 h-3.5"></i> Nuevo Examen
+            </a>
+        </div>
+        {% if history %}
+        <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs">
+                <thead class="bg-slate-50 text-slate-500 uppercase tracking-wider">
+                    <tr>
+                        <th class="px-6 py-3">Fecha</th>
+                        <th class="px-6 py-3">Nota</th>
+                        <th class="px-6 py-3">Aciertos</th>
+                        <th class="px-6 py-3">Tiempo</th>
+                        <th class="px-6 py-3">Resultado</th>
+                        <th class="px-6 py-3 text-right">Revisión</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100">
+                    {% for item in history %}
+                    <tr class="hover:bg-slate-50/70 transition-colors">
+                        <td class="px-6 py-3.5 text-slate-600 font-medium">{{ item.created_at }}</td>
+                        <td class="px-6 py-3.5 font-bold text-sm {% if item.score >= 7.0 %}text-emerald-600{% else %}text-rose-600{% endif %}">
+                            {{ item.score }} / 10.0
+                        </td>
+                        <td class="px-6 py-3.5 text-slate-600">{{ item.correct_count }} de {{ item.total_questions }}</td>
+                        <td class="px-6 py-3.5 text-slate-500">{{ (item.time_spent_seconds // 60) }}m {{ (item.time_spent_seconds % 60) }}s</td>
+                        <td class="px-6 py-3.5">
+                            {% if item.passed %}
+                            <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800">Aprobado</span>
+                            {% else %}
+                            <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-100 text-rose-800">Reprobado</span>
+                            {% endif %}
+                        </td>
+                        <td class="px-6 py-3.5 text-right">
+                            <a href="{{ url_for('resultado_examen', attempt_id=item.id) }}" class="text-blue-700 font-semibold hover:underline">
+                                Ver Dictamen →
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="py-12 text-center text-slate-400 text-xs">
+            Aún no has completado simulacros. ¡Realiza tu primer examen para comenzar a registrar tus métricas!
+        </div>
+        {% endif %}
+    </div>
+
+</div>
+
+<!-- Edit Profile Modal -->
+<div id="edit-profile-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl max-w-lg w-full p-6 sm:p-8 shadow-2xl border border-slate-100 animate-in fade-in zoom-in-95 duration-150">
+        <div class="flex items-center justify-between pb-4 border-b border-slate-100 mb-5">
+            <h3 class="text-lg font-bold text-slate-900 flex items-center gap-2">
+                <i data-lucide="user" class="w-5 h-5 text-blue-600"></i>
+                <span>Actualizar Datos del Aspirante</span>
+            </h3>
+            <button onclick="closeEditModal()" class="text-slate-400 hover:text-slate-600 p-1 rounded-lg">
+                <i data-lucide="x" class="w-5 h-5"></i>
+            </button>
+        </div>
+
+        <form id="edit-profile-form" class="space-y-4 text-xs">
+            <div>
+                <label class="block font-bold uppercase tracking-wider text-slate-600 mb-1">Nombre Completo:</label>
+                <input 
+                    type="text" 
+                    id="input-name" 
+                    value="{{ profile.full_name }}" 
+                    class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm focus:border-blue-600 focus:outline-none"
+                    required
+                >
+            </div>
+
+            <div>
+                <label class="block font-bold uppercase tracking-wider text-slate-600 mb-1">Universidad / Alma Mater:</label>
+                <input 
+                    type="text" 
+                    id="input-univ" 
+                    value="{{ profile.university }}" 
+                    placeholder="Ej. Universidad de El Salvador (UES)" 
+                    class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm focus:border-blue-600 focus:outline-none"
+                >
+            </div>
+
+            <div class="grid grid-cols-2 gap-3">
+                <div>
+                    <label class="block font-bold uppercase tracking-wider text-slate-600 mb-1">N° Carné / Acuerdo CSJ:</label>
+                    <input 
+                        type="text" 
+                        id="input-lawyer-id" 
+                        value="{{ profile.lawyer_id }}" 
+                        placeholder="Ej. 12450 o En trámite" 
+                        class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm focus:border-blue-600 focus:outline-none"
+                    >
+                </div>
+                <div>
+                    <label class="block font-bold uppercase tracking-wider text-slate-600 mb-1">Fecha Meta Examen:</label>
+                    <input 
+                        type="date" 
+                        id="input-target-date" 
+                        value="{{ profile.target_exam_date }}" 
+                        class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm focus:border-blue-600 focus:outline-none"
+                    >
+                </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-3">
+                <div>
+                    <label class="block font-bold uppercase tracking-wider text-slate-600 mb-1">Correo Electrónico:</label>
+                    <input 
+                        type="email" 
+                        id="input-email" 
+                        value="{{ profile.email }}" 
+                        placeholder="correo@ejemplo.com" 
+                        class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm focus:border-blue-600 focus:outline-none"
+                    >
+                </div>
+                <div>
+                    <label class="block font-bold uppercase tracking-wider text-slate-600 mb-1">Teléfono / WhatsApp:</label>
+                    <input 
+                        type="tel" 
+                        id="input-phone" 
+                        value="{{ profile.phone }}" 
+                        placeholder="7000-0000" 
+                        class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm focus:border-blue-600 focus:outline-none"
+                    >
+                </div>
+            </div>
+
+            <div class="pt-4 border-t border-slate-100 flex gap-3">
+                <button type="button" onclick="closeEditModal()" class="flex-1 py-2.5 rounded-xl border border-slate-300 text-slate-700 font-bold hover:bg-slate-50 transition-colors">
+                    Cancelar
+                </button>
+                <button type="submit" id="save-profile-btn" class="flex-1 py-2.5 rounded-xl bg-blue-700 hover:bg-blue-600 text-white font-bold shadow transition-colors flex items-center justify-center gap-1.5">
+                    <i data-lucide="check" class="w-4 h-4"></i> Guardar Cambios
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    const editModal = document.getElementById('edit-profile-modal');
+    const editForm = document.getElementById('edit-profile-form');
+    const saveBtn = document.getElementById('save-profile-btn');
+
+    function openEditModal() {
+        editModal.classList.remove('hidden');
+        lucide.createIcons();
+    }
+
+    function closeEditModal() {
+        editModal.classList.add('hidden');
+    }
+
+    editForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const deviceId = window.NotariadoAuth ? window.NotariadoAuth.getDeviceId() : '';
+        const name = document.getElementById('input-name').value.trim();
+        const univ = document.getElementById('input-univ').value.trim();
+        const lawyerId = document.getElementById('input-lawyer-id').value.trim();
+        const targetDate = document.getElementById('input-target-date').value;
+        const email = document.getElementById('input-email').value.trim();
+        const phone = document.getElementById('input-phone').value.trim();
+
+        saveBtn.disabled = true;
+        saveBtn.innerHTML = `<i data-lucide="loader-2" class="w-4 h-4 animate-spin"></i> Guardando...`;
+        lucide.createIcons();
+
+        try {
+            const res = await fetch('/api/profile/update', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Device-Id': deviceId
+                },
+                body: JSON.stringify({
+                    device_id: deviceId,
+                    full_name: name,
+                    university: univ,
+                    lawyer_id: lawyerId,
+                    target_exam_date: targetDate,
+                    email: email,
+                    phone: phone
+                })
+            });
+
+            const data = await res.json();
+            if (data.success) {
+                location.reload();
+            } else {
+                alert('Error al actualizar: ' + (data.error || 'Error desconocido'));
+                saveBtn.disabled = false;
+                saveBtn.innerHTML = 'Guardar Cambios';
+            }
+        } catch (err) {
+            console.error(err);
+            alert('Error al conectar con el servidor.');
+            saveBtn.disabled = false;
+            saveBtn.innerHTML = 'Guardar Cambios';
+        }
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,109 @@
+{% extends "base.html" %}
+
+{% block title %}Fichas Mnemotécnicas de Plazos y Reglas | Notariado El Salvador{% endblock %}
+
+{% block head %}
+<style>
+    .flashcard-box {
+        min-height: 340px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <!-- Header -->
+    <div class="text-center max-w-2xl mx-auto mb-8">
+        <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-100 text-amber-800 text-xs font-bold uppercase tracking-wider mb-2">
+            <i data-lucide="sparkles" class="w-4 h-4"></i> Mnemotecnia Notarial
+        </div>
+        <h1 class="text-3xl font-extrabold text-slate-900 tracking-tight mb-2">
+            Plazos Fatales y Requisitos Solemnes
+        </h1>
+        <p class="text-sm text-slate-600">
+            Memoriza los términos perentorios más preguntados en el examen de la CSJ con tarjetas de repaso activo.
+        </p>
+    </div>
+
+    <!-- Category Filter -->
+    <div class="flex justify-center flex-wrap gap-2 mb-8" id="fc-categories">
+        <button type="button" class="fc-cat-btn px-4 py-2 rounded-xl text-xs font-bold bg-amber-600 text-white shadow-sm transition-all" data-cat="all">
+            Todas las Fichas
+        </button>
+        {% for cat in categories %}
+        <button type="button" class="fc-cat-btn px-4 py-2 rounded-xl text-xs font-semibold bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 transition-all" data-cat="{{ cat.id }}">
+            {{ cat.name }}
+        </button>
+        {% endfor %}
+    </div>
+
+    <!-- Active Card Container -->
+    <div id="fc-loading" class="py-16 text-center">
+        <div class="inline-block animate-spin text-amber-600 mb-3">
+            <i data-lucide="loader-2" class="w-8 h-8"></i>
+        </div>
+        <div class="text-sm font-medium text-slate-500">Cargando fichas de estudio...</div>
+    </div>
+
+    <div id="fc-card-wrapper" class="hidden">
+        <!-- Progress Counter -->
+        <div class="flex items-center justify-between text-xs font-bold text-slate-500 uppercase tracking-wider mb-3 px-2">
+            <span id="fc-category-label">Materia Jurídica</span>
+            <span>Ficha <span id="fc-current-index" class="text-slate-900 font-extrabold">1</span> de <span id="fc-total-count">8</span></span>
+        </div>
+
+        <!-- 3D Flip Card Container -->
+        <div class="perspective-1000 cursor-pointer select-none" id="flashcard-container">
+            <div id="card-inner-element" class="card-inner relative w-full flashcard-box transform-style-3d shadow-xl rounded-2xl border border-slate-200">
+                <!-- Front Side -->
+                <div class="absolute inset-0 backface-hidden bg-white rounded-2xl p-8 sm:p-12 flex flex-col justify-between border-b-4 border-amber-500">
+                    <div>
+                        <span id="fc-title-front" class="inline-block px-3 py-1 rounded-full text-xs font-bold bg-amber-50 text-amber-800 border border-amber-200 mb-6">
+                            Tema
+                        </span>
+                        <h2 id="fc-prompt-text" class="font-serif-legal text-xl sm:text-2xl text-slate-900 leading-relaxed font-semibold">
+                            ¿Pregunta?
+                        </h2>
+                    </div>
+                    <div class="flex items-center justify-center gap-2 text-xs font-semibold text-slate-400">
+                        <i data-lucide="rotate-cw" class="w-4 h-4"></i> Haz clic o presiona Espacio para ver la respuesta legal
+                    </div>
+                </div>
+
+                <!-- Back Side (Rotated 180 deg) -->
+                <div class="absolute inset-0 backface-hidden rotate-y-180 bg-gradient-to-br from-navy-950 to-slate-900 text-white rounded-2xl p-8 sm:p-12 flex flex-col justify-between border-b-4 border-gold-500">
+                    <div>
+                        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-bold bg-gold-500/20 text-gold-500 border border-gold-500/30 mb-4">
+                            <i data-lucide="scale" class="w-4 h-4"></i> <span id="fc-article-back">Artículo de Ley</span>
+                        </div>
+                        <div class="text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">Respuesta Jurídica:</div>
+                        <div id="fc-answer-back" class="font-serif-legal text-lg sm:text-xl text-slate-100 leading-relaxed whitespace-pre-line font-medium">
+                            Respuesta legal
+                        </div>
+                    </div>
+                    <div class="flex items-center justify-center gap-2 text-xs font-semibold text-slate-400">
+                        <i data-lucide="rotate-cw" class="w-4 h-4"></i> Clic para voltear de nuevo
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Navigation Controls -->
+        <div class="flex items-center justify-between mt-8">
+            <button id="fc-prev-btn" type="button" class="px-5 py-2.5 rounded-xl border border-slate-300 hover:bg-white bg-slate-50 font-semibold text-slate-700 text-sm transition-colors flex items-center gap-2">
+                <i data-lucide="chevron-left" class="w-4 h-4"></i> Anterior Ficha
+            </button>
+            <button id="fc-flip-btn" type="button" class="px-4 py-2 rounded-xl bg-amber-100 hover:bg-amber-200 text-amber-900 font-bold text-xs transition-colors flex items-center gap-1.5">
+                <i data-lucide="repeat" class="w-3.5 h-3.5"></i> Voltear
+            </button>
+            <button id="fc-next-btn" type="button" class="px-6 py-2.5 rounded-xl bg-amber-600 hover:bg-amber-500 text-white font-bold text-sm shadow transition-colors flex items-center gap-2">
+                Siguiente Ficha <i data-lucide="chevron-right" class="w-4 h-4"></i>
+            </button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/flashcards.js') }}"></script>
+{% endblock %}

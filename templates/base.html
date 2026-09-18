@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Suficiencia SV | Simulador Notarial CSJ El Salvador{% endblock %}</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        navy: {
+                            800: '#152542',
+                            900: '#0f1e36',
+                            950: '#0a1424'
+                        },
+                        gold: {
+                            500: '#c59b27',
+                            600: '#a37e1a'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/custom.css') }}">
+    <!-- Global Device ID Script -->
+    <script>
+        (function() {
+            let devId = localStorage.getItem('notariado_device_id');
+            if (!devId) {
+                devId = 'dev_' + Math.random().toString(36).substring(2, 12) + '_' + Date.now().toString(36);
+                localStorage.setItem('notariado_device_id', devId);
+            }
+            document.cookie = "notariado_device_id=" + devId + "; path=/; max-age=" + (365*24*3600);
+            window.NotariadoAuth = {
+                getDeviceId: function() { return devId; }
+            };
+        })();
+    </script>
+    {% block head %}{% endblock %}
+</head>
+<body class="min-h-screen flex flex-col bg-slate-100 text-slate-800">
+    <!-- Institutional Top Bar -->
+    <header class="bg-navy-900 text-white border-b-4 border-gold-500 shadow-md sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <!-- Brand / Logo -->
+                <a href="{{ url_for('index') }}" class="flex items-center space-x-3 group">
+                    <div class="w-10 h-10 rounded-lg bg-navy-800 border border-gold-500/40 flex items-center justify-center shadow-inner group-hover:border-gold-500 transition-colors">
+                        <i data-lucide="scale" class="w-6 h-6 text-gold-500"></i>
+                    </div>
+                    <div>
+                        <div class="text-xs uppercase tracking-wider text-slate-300 font-medium">República de El Salvador</div>
+                        <div class="text-lg font-bold tracking-tight text-white flex items-center gap-1.5">
+                            <span>SUFICIENCIA</span>
+                            <span class="text-xs font-black px-1.5 py-0.5 rounded bg-gold-500 text-navy-950">SV</span>
+                        </div>
+                    </div>
+                </a>
+
+                <!-- Desktop Navigation -->
+                <nav class="hidden md:flex items-center space-x-1">
+                    <a href="{{ url_for('index') }}" class="px-3 py-2 rounded-md text-sm font-medium text-slate-200 hover:text-white hover:bg-navy-800 transition-colors flex items-center gap-1.5">
+                        <i data-lucide="layout-dashboard" class="w-4 h-4 text-slate-400"></i>
+                        <span>Panel</span>
+                    </a>
+                    <a href="{{ url_for('simulador') }}" class="px-3 py-2 rounded-md text-sm font-medium text-white bg-blue-700 hover:bg-blue-600 transition-colors flex items-center gap-1.5 shadow-sm">
+                        <i data-lucide="play-circle" class="w-4 h-4 text-gold-500"></i>
+                        <span class="font-semibold">Simulador Oficial</span>
+                    </a>
+                    <a href="{{ url_for('practica') }}" class="px-3 py-2 rounded-md text-sm font-medium text-slate-200 hover:text-white hover:bg-navy-800 transition-colors flex items-center gap-1.5">
+                        <i data-lucide="book-open-check" class="w-4 h-4 text-slate-400"></i>
+                        <span>Estudio por Materias</span>
+                    </a>
+                    <a href="{{ url_for('flashcards') }}" class="px-3 py-2 rounded-md text-sm font-medium text-slate-200 hover:text-white hover:bg-navy-800 transition-colors flex items-center gap-1.5">
+                        <i data-lucide="layers" class="w-4 h-4 text-slate-400"></i>
+                        <span>Fichas de Plazos</span>
+                    </a>
+                    <a href="{{ url_for('historial') }}" class="px-3 py-2 rounded-md text-sm font-medium text-slate-200 hover:text-white hover:bg-navy-800 transition-colors flex items-center gap-1.5">
+                        <i data-lucide="history" class="w-4 h-4 text-slate-400"></i>
+                        <span>Historial</span>
+                    </a>
+                    <a href="{{ url_for('perfil') }}" class="px-3 py-2 rounded-md text-sm font-medium text-slate-200 hover:text-white hover:bg-navy-800 transition-colors flex items-center gap-1.5">
+                        <i data-lucide="user" class="w-4 h-4 text-slate-400"></i>
+                        <span>Mi Perfil</span>
+                    </a>
+                    <a href="{{ url_for('embajadores') }}" class="px-3 py-2 rounded-md text-sm font-bold text-amber-400 hover:text-amber-300 hover:bg-navy-800 transition-colors flex items-center gap-1.5">
+                        <i data-lucide="zap" class="w-4 h-4 text-amber-500"></i>
+                        <span>Embajadores</span>
+                    </a>
+                </nav>
+
+                <!-- License Status & Quick Purchase Controls -->
+                <div class="hidden lg:flex items-center gap-2">
+                    {% if license_info %}
+                    <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/40">
+                        <i data-lucide="shield-check" class="w-3.5 h-3.5 text-emerald-400"></i>
+                        <span>Licencia Activa</span>
+                    </span>
+                    {% else %}
+                    <a href="{{ url_for('activar') }}" class="px-3 py-1.5 rounded-lg border border-slate-600 hover:border-slate-400 text-xs font-semibold text-slate-200 hover:text-white transition-colors flex items-center gap-1">
+                        <i data-lucide="key" class="w-3.5 h-3.5 text-slate-400"></i>
+                        <span>Activar Clave</span>
+                    </a>
+                    <a href="{{ url_for('comprar') }}" class="px-3 py-1.5 rounded-lg bg-gold-500 hover:bg-gold-600 text-navy-950 font-bold text-xs shadow transition-all flex items-center gap-1">
+                        <i data-lucide="zap" class="w-3.5 h-3.5"></i>
+                        <span>Comprar Acceso</span>
+                    </a>
+                    {% endif %}
+                </div>
+
+                <!-- Mobile Menu Button -->
+                <div class="md:hidden flex items-center">
+                    <button id="mobile-menu-btn" type="button" class="p-2 rounded-md text-slate-300 hover:text-white hover:bg-navy-800 focus:outline-none">
+                        <i data-lucide="menu" class="w-6 h-6"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Mobile Menu Drawer -->
+        <div id="mobile-menu" class="hidden md:hidden bg-navy-950 border-t border-navy-800 px-4 pt-2 pb-4 space-y-1">
+            <a href="{{ url_for('index') }}" class="block px-3 py-2 rounded-md text-base font-medium text-slate-200 hover:bg-navy-800">Panel Principal</a>
+            <a href="{{ url_for('simulador') }}" class="block px-3 py-2 rounded-md text-base font-semibold text-white bg-blue-700">Simulador Oficial CSJ</a>
+            <a href="{{ url_for('practica') }}" class="block px-3 py-2 rounded-md text-base font-medium text-slate-200 hover:bg-navy-800">Estudio por Materias</a>
+            <a href="{{ url_for('flashcards') }}" class="block px-3 py-2 rounded-md text-base font-medium text-slate-200 hover:bg-navy-800">Fichas de Plazos</a>
+            <a href="{{ url_for('historial') }}" class="block px-3 py-2 rounded-md text-base font-medium text-slate-200 hover:bg-navy-800">Historial y Calificaciones</a>
+            <a href="{{ url_for('perfil') }}" class="block px-3 py-2 rounded-md text-base font-medium text-slate-200 hover:bg-navy-800">Mi Perfil</a>
+            <div class="pt-2 border-t border-navy-800 flex gap-2">
+                <a href="{{ url_for('activar') }}" class="flex-1 text-center py-2 rounded-lg border border-slate-600 text-xs font-bold text-slate-200">Activar Clave</a>
+                <a href="{{ url_for('comprar') }}" class="flex-1 text-center py-2 rounded-lg bg-gold-500 text-navy-950 text-xs font-bold">Comprar Acceso</a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="flex-grow">
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Footer with Legal Disclaimer Link -->
+    <footer class="bg-navy-950 text-slate-400 border-t border-slate-800 mt-12 py-8">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-sm">
+            <div class="flex flex-col md:flex-row items-center justify-between gap-4 pb-4 border-b border-slate-800/80">
+                <div class="flex items-center space-x-2">
+                    <i data-lucide="landmark" class="w-5 h-5 text-gold-500"></i>
+                    <span class="font-medium text-slate-300">Sistema de Entrenamiento Notarial • El Salvador</span>
+                </div>
+                <div class="flex flex-wrap gap-4 text-xs">
+                    <a href="{{ url_for('embajadores') }}" class="text-amber-400 hover:text-amber-300 font-bold flex items-center gap-1">
+                        <i data-lucide="zap" class="w-3.5 h-3.5"></i>
+                        <span>Programa de Embajadores (Comisiones Strike)</span>
+                    </a>
+                    <a href="{{ url_for('terminos') }}" class="text-slate-400 hover:text-gold-500 underline flex items-center gap-1">
+                        <i data-lucide="shield-alert" class="w-3.5 h-3.5"></i>
+                        <span>Aviso Legal, Descargo CSJ y Términos de Licencia</span>
+                    </a>
+                    <a href="{{ url_for('admin_panel') }}" class="text-slate-500 hover:text-slate-300 flex items-center gap-1">
+                        <i data-lucide="lock" class="w-3.5 h-3.5"></i>
+                        <span>Acceso Propietario</span>
+                    </a>
+                </div>
+            </div>
+            <div class="pt-4 text-center md:text-left text-xs text-slate-500 leading-relaxed">
+                <strong>Descargo de Responsabilidad (Disclaimer):</strong> Este simulador es una herramienta de estudio académica independiente, sin vínculo oficial, patrocinio ni representación de la Corte Suprema de Justicia (CSJ) ni de la Comisión de Abogacía y Notariado de El Salvador. Cada licencia adquirida es de uso personal, no transferible y queda vinculada a un solo dispositivo. Las comisiones del Programa de Embajadores se liquidan en USD vía Strike netas de cualquier comisión o tarifa de enrutamiento por uso de la red Lightning.
+            </div>
+        </div>
+    </footer>
+
+    <!-- Initialize Lucide Icons -->
+    <script>
+        lucide.createIcons();
+        const menuBtn = document.getElementById('mobile-menu-btn');
+        const mobileMenu = document.getElementById('mobile-menu');
+        if (menuBtn && mobileMenu) {
+            menuBtn.addEventListener('click', () => {
+                mobileMenu.classList.toggle('hidden');
+            });
+        }
+    </script>
+    {% block scripts %}{% endblock %}
+</body>
+</html>

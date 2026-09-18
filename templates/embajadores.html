@@ -1,0 +1,229 @@
+{% extends "base.html" %}
+
+{% block title %}Programa de Embajadores Notariales | Comisiones Strike | Suficiencia SV{% endblock %}
+
+{% block content %}
+<div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-10">
+
+    <!-- Hero Header -->
+    <div class="text-center space-y-4 max-w-3xl mx-auto">
+        <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-900 text-xs font-black uppercase tracking-wider">
+            <i data-lucide="zap" class="w-4 h-4 text-amber-600"></i> Programa de Embajadores Notariales
+        </div>
+        <h1 class="text-3xl sm:text-4xl lg:text-5xl font-black text-slate-900 tracking-tight leading-tight">
+            Recomienda y Recibe <span class="text-amber-600">Hasta $10.00 USD</span> por Cada Colega
+        </h1>
+        <p class="text-sm sm:text-base text-slate-600 leading-relaxed">
+            Comparte tu código personalizado con tus círculos de estudio. Tus colegas reciben un <strong>descuento inmediato</strong> y tú recibes tu comisión directa a tu billetera <strong>Strike (USD)</strong> al instante.
+        </p>
+    </div>
+
+    <!-- Win-Win Value Cards -->
+    <div class="grid md:grid-cols-3 gap-6">
+        <!-- Card 1 -->
+        <div class="p-6 rounded-3xl border border-slate-200 bg-white shadow-sm hover:shadow-md transition-shadow relative overflow-hidden flex flex-col justify-between">
+            <div>
+                <div class="w-10 h-10 rounded-2xl bg-blue-50 text-blue-700 flex items-center justify-center font-bold mb-4">
+                    <i data-lucide="award" class="w-5 h-5"></i>
+                </div>
+                <div class="text-xs font-bold uppercase tracking-wider text-slate-400">Plan 30 Días ($19.99)</div>
+                <div class="text-xl font-extrabold text-slate-900 mt-1">Refuerzo Intensivo</div>
+                <div class="my-4 p-3 rounded-xl bg-slate-50 border border-slate-100 space-y-1 text-xs">
+                    <div class="text-slate-600 flex justify-between">
+                        <span>Tu colega ahorra:</span>
+                        <strong class="text-emerald-700">-$3.00 USD</strong>
+                    </div>
+                    <div class="text-slate-600 flex justify-between">
+                        <span>Tu colega paga:</span>
+                        <strong class="text-slate-900">$16.99 USD</strong>
+                    </div>
+                </div>
+            </div>
+            <div class="pt-3 border-t border-slate-100 flex items-center justify-between text-xs font-bold">
+                <span class="text-slate-500">Tu Comisión Strike:</span>
+                <span class="text-base text-amber-600 font-extrabold flex items-center gap-1">
+                    <i data-lucide="zap" class="w-4 h-4"></i> $3.00 USD
+                </span>
+            </div>
+        </div>
+
+        <!-- Card 2 -->
+        <div class="p-6 rounded-3xl border border-slate-200 bg-white shadow-sm hover:shadow-md transition-shadow relative overflow-hidden flex flex-col justify-between">
+            <div>
+                <div class="w-10 h-10 rounded-2xl bg-indigo-50 text-indigo-700 flex items-center justify-center font-bold mb-4">
+                    <i data-lucide="book-open" class="w-5 h-5"></i>
+                </div>
+                <div class="text-xs font-bold uppercase tracking-wider text-slate-400">Plan 90 Días ($34.99)</div>
+                <div class="text-xl font-extrabold text-slate-900 mt-1">Trimestre Notarial</div>
+                <div class="my-4 p-3 rounded-xl bg-slate-50 border border-slate-100 space-y-1 text-xs">
+                    <div class="text-slate-600 flex justify-between">
+                        <span>Tu colega ahorra:</span>
+                        <strong class="text-emerald-700">-$5.00 USD</strong>
+                    </div>
+                    <div class="text-slate-600 flex justify-between">
+                        <span>Tu colega paga:</span>
+                        <strong class="text-slate-900">$29.99 USD</strong>
+                    </div>
+                </div>
+            </div>
+            <div class="pt-3 border-t border-slate-100 flex items-center justify-between text-xs font-bold">
+                <span class="text-slate-500">Tu Comisión Strike:</span>
+                <span class="text-base text-amber-600 font-extrabold flex items-center gap-1">
+                    <i data-lucide="zap" class="w-4 h-4"></i> $5.00 USD
+                </span>
+            </div>
+        </div>
+
+        <!-- Card 3: Vitalicia (Most Popular) -->
+        <div class="p-6 rounded-3xl border-2 border-amber-400 bg-gradient-to-b from-amber-500/10 via-white to-amber-500/5 shadow-md relative overflow-hidden flex flex-col justify-between">
+            <span class="absolute top-4 right-4 text-[10px] font-black uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-amber-500 text-slate-950">
+                Más Rentable
+            </span>
+            <div>
+                <div class="w-10 h-10 rounded-2xl bg-amber-500 text-slate-950 flex items-center justify-center font-bold mb-4 shadow">
+                    <i data-lucide="crown" class="w-5 h-5"></i>
+                </div>
+                <div class="text-xs font-bold uppercase tracking-wider text-amber-900">Plan Vitalicio ($49.99)</div>
+                <div class="text-xl font-extrabold text-slate-900 mt-1">Acceso Ilimitado VIP</div>
+                <div class="my-4 p-3 rounded-xl bg-white border border-amber-200 space-y-1 text-xs shadow-sm">
+                    <div class="text-slate-600 flex justify-between">
+                        <span>Tu colega ahorra:</span>
+                        <strong class="text-emerald-700">-$5.00 USD</strong>
+                    </div>
+                    <div class="text-slate-600 flex justify-between">
+                        <span>Tu colega paga:</span>
+                        <strong class="text-slate-900">$44.99 USD</strong>
+                    </div>
+                </div>
+            </div>
+            <div class="pt-3 border-t border-amber-200 flex items-center justify-between text-xs font-bold">
+                <span class="text-slate-700 font-bold">Tu Comisión Strike:</span>
+                <span class="text-xl text-amber-600 font-black flex items-center gap-1">
+                    <i data-lucide="zap" class="w-5 h-5"></i> $10.00 USD
+                </span>
+            </div>
+        </div>
+    </div>
+
+    <!-- How Strike Works -->
+    <div class="p-6 sm:p-8 rounded-3xl bg-navy-950 text-white flex flex-col md:flex-row items-center justify-between gap-6 shadow-xl">
+        <div class="space-y-2 text-center md:text-left">
+            <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-500 text-navy-950 text-xs font-black uppercase">
+                <i data-lucide="zap" class="w-3.5 h-3.5"></i> Pagos vía Strike
+            </div>
+            <h3 class="text-xl sm:text-2xl font-bold">¿Por qué pagamos por Strike?</h3>
+            <p class="text-xs sm:text-sm text-slate-300 max-w-xl leading-relaxed">
+                Strike te permite recibir Dólares (USD) de forma instantánea sin comisiones de transferencias interbancarias. Puedes retirar tu saldo a cualquier cuenta bancaria salvadoreña o usarlo directamente.
+            </p>
+        </div>
+        <div class="shrink-0">
+            <a href="https://strike.me" target="_blank" class="px-5 py-3 rounded-2xl bg-amber-500 hover:bg-amber-400 text-navy-950 font-black text-xs shadow-lg transition-colors flex items-center gap-2">
+                <span>¿No tienes Strike? Descárgala gratis</span>
+                <i data-lucide="external-link" class="w-4 h-4"></i>
+            </a>
+        </div>
+    </div>
+
+    <!-- Registration Form for Ambassadors -->
+    <div class="max-w-2xl mx-auto p-8 rounded-3xl bg-white border border-slate-200 shadow-xl space-y-6">
+        <div class="text-center space-y-1">
+            <h2 class="text-2xl font-extrabold text-slate-900">Solicita tu Código de Embajador</h2>
+            <p class="text-xs text-slate-500">Completa tus datos para activar tu código colegiado y empezar a ganar hoy mismo.</p>
+        </div>
+
+        <form id="ambassador-form" class="space-y-4">
+            <div>
+                <label class="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1.5">Nombre Completo y Título:</label>
+                <input type="text" id="amb-name" placeholder="Ej. Lic. Carlos Henríquez Méndez" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm focus:border-amber-500 focus:outline-none" required>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                    <label class="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1.5">Usuario de Strike (@username):</label>
+                    <div class="relative">
+                        <span class="absolute left-3.5 top-2.5 text-slate-400 font-mono text-sm">@</span>
+                        <input type="text" id="amb-strike" placeholder="tu_usuario_strike" class="w-full pl-8 pr-3.5 py-2.5 rounded-xl border border-slate-300 font-mono text-sm focus:border-amber-500 focus:outline-none" required>
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1.5">Código Deseado:</label>
+                    <input type="text" id="amb-code" placeholder="Ej. CARLOS2026 o LIC-HENRIQUEZ" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 uppercase font-mono font-bold text-sm focus:border-amber-500 focus:outline-none" required>
+                </div>
+            </div>
+            <div>
+                <label class="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1.5">Correo Electrónico:</label>
+                <input type="email" id="amb-email" placeholder="carlos.abogado@gmail.com" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm focus:border-amber-500 focus:outline-none" required>
+            </div>
+
+            <!-- Lightning Network Fee Notice Box -->
+            <div class="p-4 rounded-2xl bg-amber-50 border border-amber-300/80 text-amber-950 text-xs leading-relaxed space-y-1.5">
+                <div class="font-bold text-amber-900 flex items-center gap-1.5">
+                    <i data-lucide="info" class="w-4 h-4 text-amber-600 shrink-0"></i>
+                    <span>Términos de Liquidación y Tarifas de Red Lightning:</span>
+                </div>
+                <p class="text-justify text-slate-700">
+                    Las comisiones se liquidan directamente a tu cuenta de Strike en Dólares (USD). Se descontará del monto de la comisión cualquier cargo, costo o tarifa de enrutamiento por uso de la red Lightning (<em>network / routing fees</em>) que aplique la red al momento de la transferencia, liquidándose el saldo neto. El pago se procesa tras la confirmación e irrevocabilidad de la compra del aspirante.
+                </p>
+            </div>
+
+            <!-- Terms Acceptance Checkbox -->
+            <div class="flex items-start gap-2.5 text-xs text-slate-600 p-2">
+                <input type="checkbox" id="amb-terms-check" required class="mt-0.5 w-4 h-4 rounded border-slate-300 text-amber-600 focus:ring-amber-500 cursor-pointer shrink-0">
+                <label for="amb-terms-check" class="cursor-pointer leading-snug">
+                    He leído y acepto expresamente las condiciones del programa y el <a href="/terminos" target="_blank" class="text-amber-800 font-bold underline hover:text-amber-950">Aviso Legal (Cláusula XI: Deducción de Tarifas de Red Lightning)</a>.
+                </label>
+            </div>
+
+            <div id="amb-response" class="text-xs font-bold hidden p-3 rounded-xl"></div>
+
+            <button type="submit" id="amb-submit-btn" class="w-full py-3.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-sm shadow-md transition-all flex items-center justify-center gap-2">
+                <i data-lucide="check-circle" class="w-4 h-4"></i>
+                <span>Activar Mi Código de Embajador</span>
+            </button>
+        </form>
+    </div>
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.getElementById('ambassador-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const btn = document.getElementById('amb-submit-btn');
+        const resp = document.getElementById('amb-response');
+
+        const name = document.getElementById('amb-name').value.trim();
+        const strike = document.getElementById('amb-strike').value.trim();
+        const code = document.getElementById('amb-code').value.trim();
+        const email = document.getElementById('amb-email').value.trim();
+
+        btn.disabled = true;
+        btn.innerHTML = `<i data-lucide="loader-2" class="w-4 h-4 animate-spin"></i> Guardando...`;
+        lucide.createIcons();
+
+        try {
+            const r = await fetch('/api/ambassadors/register', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name, strike_handle: strike, code, email })
+            });
+            const data = await r.json();
+            if (data.success) {
+                resp.textContent = data.message;
+                resp.className = 'text-xs font-bold text-emerald-800 bg-emerald-50 border border-emerald-200 p-4 rounded-xl block';
+                document.getElementById('ambassador-form').reset();
+            } else {
+                resp.textContent = data.error || 'Error al procesar solicitud.';
+                resp.className = 'text-xs font-bold text-rose-800 bg-rose-50 border border-rose-200 p-4 rounded-xl block';
+            }
+        } catch (err) {
+            resp.textContent = 'Error de conexión con el servidor.';
+            resp.className = 'text-xs font-bold text-rose-800 bg-rose-50 border border-rose-200 p-4 rounded-xl block';
+        } finally {
+            btn.disabled = false;
+            btn.innerHTML = `<i data-lucide="check-circle" class="w-4 h-4"></i> <span>Activar Mi Código de Embajador</span>`;
+            lucide.createIcons();
+        }
+    });
+</script>
+{% endblock %}

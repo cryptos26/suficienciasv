@@ -1,0 +1,489 @@
+{% extends "base.html" %}
+
+{% block title %}Panel de Administración y Control de Licencias | Notariado CSJ{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    {% if not is_logged %}
+    <!-- Admin Login Screen -->
+    <div class="max-w-md mx-auto bg-white rounded-2xl border border-slate-200 shadow-xl p-8 text-center">
+        <div class="w-12 h-12 rounded-2xl bg-navy-900 text-gold-500 flex items-center justify-center mx-auto mb-4">
+            <i data-lucide="lock" class="w-6 h-6"></i>
+        </div>
+        <h1 class="text-xl font-bold text-slate-900 mb-1">Acceso a Administración</h1>
+        <p class="text-xs text-slate-500 mb-6">Ingresa el PIN de seguridad del propietario para gestionar claves y ventas.</p>
+
+        {% if error %}
+        <div class="p-3 rounded-xl bg-rose-100 text-rose-800 text-xs font-semibold mb-4 border border-rose-200">
+            {{ error }}
+        </div>
+        {% endif %}
+
+        <form method="POST" action="{{ url_for('admin_panel') }}" class="space-y-4">
+            <div>
+                <input 
+                    type="password" 
+                    name="admin_pin" 
+                    placeholder="PIN de Administrador" 
+                    class="w-full text-center tracking-widest text-lg font-mono px-4 py-3 rounded-xl border border-slate-300 focus:border-blue-600 focus:outline-none"
+                    required
+                    autofocus
+                >
+                <div class="text-[10px] text-slate-400 mt-1">PIN por defecto: <strong class="font-mono">notario2026</strong></div>
+            </div>
+            <button type="submit" class="w-full py-3 rounded-xl bg-navy-900 hover:bg-navy-800 text-white font-bold text-sm shadow transition-colors">
+                Ingresar al Panel
+            </button>
+        </form>
+    </div>
+
+    {% else %}
+    <!-- Admin Logged In Dashboard -->
+    <div class="space-y-8">
+        <!-- Header Controls -->
+        <div class="flex flex-col sm:flex-row items-center justify-between gap-4 pb-4 border-b border-slate-200">
+            <div>
+                <div class="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full bg-navy-900 text-gold-500 text-xs font-bold uppercase tracking-wider mb-1">
+                    <i data-lucide="shield-check" class="w-3.5 h-3.5"></i> Modo Administrador
+                </div>
+                <h1 class="text-2xl sm:text-3xl font-extrabold text-slate-900">
+                    Gestión de Licencias y Códigos de Acceso
+                </h1>
+            </div>
+            <div class="flex items-center gap-3">
+                <a href="{{ url_for('admin_logout') }}" class="px-4 py-2 rounded-xl border border-slate-300 hover:bg-slate-50 text-slate-700 text-xs font-semibold transition-colors">
+                    Cerrar Sesión Admin
+                </a>
+            </div>
+        </div>
+
+        <!-- 10 PROMOTIONAL LIFETIME KEYS SPECIAL SECTION -->
+        <div class="bg-gradient-to-br from-amber-500/10 via-white to-amber-500/5 rounded-2xl border-2 border-amber-300 shadow-sm p-6 sm:p-8">
+            <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
+                <div>
+                    <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-500 text-navy-950 text-xs font-black uppercase tracking-wider mb-2">
+                        <i data-lucide="sparkles" class="w-4 h-4"></i> 10 Claves Promocionales Vitalicias Generadas
+                    </span>
+                    <h2 class="text-xl font-bold text-slate-900">
+                        Lote Exclusivo de Lanzamiento VIP
+                    </h2>
+                    <p class="text-xs text-slate-600 mt-0.5">
+                        Estas 10 claves otorgan acceso ilimitado de por vida y quedan vinculadas al primer dispositivo que las active.
+                    </p>
+                </div>
+                <button 
+                    onclick="copyAllPromos()" 
+                    class="px-4 py-2 rounded-xl bg-amber-600 hover:bg-amber-500 text-white font-bold text-xs shadow transition-colors flex items-center gap-1.5"
+                >
+                    <i data-lucide="copy" class="w-4 h-4"></i> Copiar las 10 Claves
+                </button>
+            </div>
+
+            <!-- Grid of 10 promo keys -->
+            <div class="grid sm:grid-cols-2 lg:grid-cols-5 gap-3" id="promo-keys-grid">
+                {% for promo in promotional_keys %}
+                <div class="p-3.5 rounded-xl border {% if promo.is_claimed %}border-blue-300 bg-blue-50/60{% else %}border-amber-300 bg-white shadow-sm{% endif %} flex flex-col justify-between">
+                    <div>
+                        <div class="flex items-center justify-between text-[11px] font-bold mb-1">
+                            <span class="text-slate-500">#{{ loop.index }} VIP</span>
+                            {% if promo.is_claimed %}
+                            <span class="text-blue-700 bg-blue-100 px-1.5 py-0.5 rounded text-[10px]">Activa</span>
+                            {% else %}
+                            <span class="text-emerald-700 bg-emerald-100 px-1.5 py-0.5 rounded text-[10px]">Disponible</span>
+                            {% endif %}
+                        </div>
+                        <div class="font-mono font-black text-sm text-slate-900 tracking-wider mb-2 select-all">
+                            {{ promo.license_key }}
+                        </div>
+                    </div>
+                    <button 
+                        onclick="copySingleKey('{{ promo.license_key }}')" 
+                        class="w-full py-1.5 rounded-lg border border-slate-200 hover:bg-slate-100 text-[11px] font-semibold text-slate-700 flex items-center justify-center gap-1 transition-colors"
+                    >
+                        <i data-lucide="message-square" class="w-3 h-3 text-emerald-600"></i> Copiar Mensaje
+                    </button>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- GENERATOR ACTIONS CARD -->
+        <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
+            <h2 class="text-base font-bold text-slate-900 mb-4 flex items-center gap-2">
+                <i data-lucide="plus-circle" class="w-5 h-5 text-blue-600"></i>
+                <span>Generador Automático de Nuevas Claves</span>
+            </h2>
+            <div class="grid sm:grid-cols-4 gap-3">
+                <button onclick="generateKey('30_dias', 'Licencia Mensual 30 días')" class="p-4 rounded-xl border-2 border-slate-200 hover:border-blue-500 bg-slate-50 hover:bg-blue-50/40 text-left transition-all group">
+                    <div class="text-xs font-bold text-slate-400 group-hover:text-blue-600 uppercase mb-1">+ 1 Clave</div>
+                    <div class="font-bold text-slate-900 text-sm">Plan 30 Días ($19.99)</div>
+                    <div class="text-xs text-slate-500 mt-1">Vigencia: 30 días tras activación</div>
+                </button>
+
+                <button onclick="generateKey('90_dias', 'Licencia Trimestral 90 días')" class="p-4 rounded-xl border-2 border-slate-200 hover:border-blue-500 bg-slate-50 hover:bg-blue-50/40 text-left transition-all group">
+                    <div class="text-xs font-bold text-slate-400 group-hover:text-blue-600 uppercase mb-1">+ 1 Clave</div>
+                    <div class="font-bold text-slate-900 text-sm">Plan 90 Días ($34.99)</div>
+                    <div class="text-xs text-slate-500 mt-1">Vigencia: 3 meses tras activación</div>
+                </button>
+
+                <button onclick="generateKey('vitalicia', 'Licencia Vitalicia')" class="p-4 rounded-xl border-2 border-slate-200 hover:border-amber-500 bg-slate-50 hover:bg-amber-50/40 text-left transition-all group">
+                    <div class="text-xs font-bold text-slate-400 group-hover:text-amber-600 uppercase mb-1">+ 1 Clave</div>
+                    <div class="font-bold text-slate-900 text-sm">Plan Vitalicio ($49.99)</div>
+                    <div class="text-xs text-slate-500 mt-1">Acceso ilimitado de por vida</div>
+                </button>
+
+                <button onclick="generateBatch(10)" class="p-4 rounded-xl border-2 border-blue-200 bg-blue-50/70 hover:bg-blue-100/70 text-left transition-all">
+                    <div class="text-xs font-bold text-blue-600 uppercase mb-1">Generación Rápida</div>
+                    <div class="font-bold text-blue-950 text-sm">+ Lote de 10 Claves</div>
+                    <div class="text-xs text-blue-800 mt-1">10 Claves Vitalicias en 1 clic</div>
+                </button>
+            </div>
+        <!-- AMBASSADORS & STRIKE COMMISSIONS SECTION -->
+        <div class="bg-white rounded-2xl border-2 border-amber-300 shadow-sm p-6 sm:p-8 space-y-6">
+            <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-4 border-b border-slate-100">
+                <div>
+                    <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-500 text-slate-950 text-xs font-black uppercase tracking-wider mb-2">
+                        <i data-lucide="zap" class="w-4 h-4"></i> Pagos vía Strike
+                    </span>
+                    <h2 class="text-xl font-bold text-slate-900">
+                        Comisiones de Embajadores Notariales
+                    </h2>
+                    <p class="text-xs text-slate-600 mt-0.5">
+                        Liquidación directa a billeteras Strike de abogados que refieren nuevos aspirantes.
+                    </p>
+                </div>
+                <!-- Mini Stats -->
+                <div class="flex items-center gap-3">
+                    <div class="px-4 py-2 rounded-xl bg-amber-50 border border-amber-200 text-right">
+                        <div class="text-[10px] font-bold text-amber-900 uppercase">Pendiente por Pagar</div>
+                        <div class="text-lg font-black text-amber-600">${{ "%.2f"|format(pending_comm_total) }} USD</div>
+                    </div>
+                    <div class="px-4 py-2 rounded-xl bg-emerald-50 border border-emerald-200 text-right">
+                        <div class="text-[10px] font-bold text-emerald-900 uppercase">Comisiones Pagadas</div>
+                        <div class="text-lg font-black text-emerald-700">${{ "%.2f"|format(paid_comm_total) }} USD</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Pending Commissions Ledger -->
+            <div>
+                <h3 class="text-sm font-bold text-slate-800 mb-3 flex items-center gap-1.5">
+                    <i data-lucide="clock" class="w-4 h-4 text-amber-600"></i> Historial y Pagos Pendientes ({{ commissions|length }})
+                </h3>
+                <div class="overflow-x-auto rounded-xl border border-slate-200">
+                    <table class="w-full text-left text-xs">
+                        <thead class="bg-slate-50 border-b border-slate-200 text-slate-500 font-semibold uppercase tracking-wider">
+                            <tr>
+                                <th class="px-4 py-2.5">Embajador</th>
+                                <th class="px-4 py-2.5">Aspirante / Orden</th>
+                                <th class="px-4 py-2.5">Plan</th>
+                                <th class="px-4 py-2.5">Comisión</th>
+                                <th class="px-4 py-2.5">Usuario Strike</th>
+                                <th class="px-4 py-2.5">Estado</th>
+                                <th class="px-4 py-2.5 text-right">Liquidación Strike</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-100">
+                            {% for comm in commissions %}
+                            <tr class="hover:bg-slate-50/80 transition-colors">
+                                <td class="px-4 py-3 font-semibold text-slate-900">
+                                    {{ comm.ambassador_name }}
+                                    <div class="font-mono text-[10px] text-indigo-700 font-bold">{{ comm.ambassador_code }}</div>
+                                </td>
+                                <td class="px-4 py-3">
+                                    <div class="font-bold text-slate-800">{{ comm.buyer_name }}</div>
+                                    <div class="font-mono text-[10px] text-slate-400">{{ comm.order_id }}</div>
+                                </td>
+                                <td class="px-4 py-3 uppercase font-semibold text-slate-600">{{ comm.plan_type }}</td>
+                                <td class="px-4 py-3 font-black text-amber-600 text-sm">
+                                    ${{ "%.2f"|format(comm.amount_usd) }} USD
+                                </td>
+                                <td class="px-4 py-3 font-mono font-bold text-slate-800">
+                                    <span class="px-2 py-0.5 rounded bg-slate-100 border border-slate-200">@{{ comm.strike_handle }}</span>
+                                </td>
+                                <td class="px-4 py-3">
+                                    {% if comm.status == 'PENDIENTE' %}
+                                    <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800">
+                                        Pendiente
+                                    </span>
+                                    {% else %}
+                                    <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800">
+                                        Pagado {{ comm.paid_at[:10] if comm.paid_at else '' }}
+                                    </span>
+                                    {% endif %}
+                                </td>
+                                <td class="px-4 py-3 text-right space-x-1">
+                                    {% if comm.status == 'PENDIENTE' %}
+                                    <a 
+                                        href="https://strike.me/{{ comm.strike_handle }}" 
+                                        target="_blank" 
+                                        class="px-2.5 py-1 rounded-lg bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-[11px] shadow-sm transition-colors inline-flex items-center gap-1"
+                                        title="Abrir Strike para transferir"
+                                    >
+                                        <i data-lucide="zap" class="w-3.5 h-3.5"></i> Pagar en Strike
+                                    </a>
+                                    <button 
+                                        onclick="markCommissionPaid('{{ comm.comm_id or comm.id }}')" 
+                                        class="px-2.5 py-1 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 font-bold text-[11px] transition-colors"
+                                    >
+                                        Marcar Pagado
+                                    </button>
+                                    {% else %}
+                                    <span class="text-xs text-slate-400 italic">Liquidado</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% else %}
+                            <tr>
+                                <td colspan="7" class="px-4 py-6 text-center text-slate-400 italic">
+                                    No hay comisiones registradas aún. Las comisiones aparecerán automáticamente cuando un aspirante use un código de embajador.
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Active Ambassadors List & Add New Form -->
+            <div class="pt-4 border-t border-slate-100 grid md:grid-cols-3 gap-6">
+                <!-- Ambassadors Table -->
+                <div class="md:col-span-2 space-y-2">
+                    <h4 class="text-xs font-bold uppercase tracking-wider text-slate-500">Embajadores Registrados ({{ ambassadors|length }})</h4>
+                    <div class="overflow-x-auto rounded-xl border border-slate-200">
+                        <table class="w-full text-left text-xs">
+                            <thead class="bg-slate-50 border-b border-slate-200 text-slate-500 uppercase tracking-wider">
+                                <tr>
+                                    <th class="px-3 py-2">Código</th>
+                                    <th class="px-3 py-2">Nombre</th>
+                                    <th class="px-3 py-2">Strike</th>
+                                    <th class="px-3 py-2">Ganado</th>
+                                    <th class="px-3 py-2">Pagado</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-slate-100 font-sans">
+                                {% for a in ambassadors %}
+                                <tr class="hover:bg-slate-50/70">
+                                    <td class="px-3 py-2 font-mono font-bold text-indigo-700">{{ a.code }}</td>
+                                    <td class="px-3 py-2 font-semibold text-slate-800">{{ a.name }}</td>
+                                    <td class="px-3 py-2 font-mono text-slate-600">@{{ a.strike_handle }}</td>
+                                    <td class="px-3 py-2 font-bold text-amber-600">${{ "%.2f"|format(a.total_earned or 0.0) }}</td>
+                                    <td class="px-3 py-2 font-bold text-emerald-700">${{ "%.2f"|format(a.total_paid or 0.0) }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Add Ambassador Form -->
+                <div class="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-3">
+                    <h4 class="text-xs font-bold uppercase tracking-wider text-slate-800 flex items-center gap-1.5">
+                        <i data-lucide="user-plus" class="w-4 h-4 text-indigo-600"></i> Registrar Nuevo Embajador
+                    </h4>
+                    <div class="space-y-2 text-xs">
+                        <input type="text" id="new-amb-code" placeholder="Código (ej. LIC-MARTINEZ)" class="w-full px-3 py-1.5 rounded-lg border border-slate-300 font-mono font-bold uppercase">
+                        <input type="text" id="new-amb-name" placeholder="Nombre completo" class="w-full px-3 py-1.5 rounded-lg border border-slate-300">
+                        <input type="text" id="new-amb-strike" placeholder="Usuario Strike (@username)" class="w-full px-3 py-1.5 rounded-lg border border-slate-300 font-mono">
+                        <button onclick="createAmbassadorQuick()" class="w-full py-2 rounded-lg bg-navy-900 hover:bg-navy-800 text-white font-bold transition-colors">
+                            Guardar Embajador
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ALL LICENSES TABLE -->
+        <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+            <div class="p-5 border-b border-slate-100 flex items-center justify-between">
+                <h2 class="text-base font-bold text-slate-900 flex items-center gap-2">
+                    <i data-lucide="database" class="w-5 h-5 text-blue-600"></i>
+                    <span>Inventario Total de Licencias ({{ licenses|length }})</span>
+                </h2>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="w-full text-left text-xs">
+                    <thead class="bg-slate-50 border-b border-slate-200 text-slate-500 font-semibold uppercase tracking-wider">
+                        <tr>
+                            <th class="px-5 py-3">Clave de Acceso</th>
+                            <th class="px-5 py-3">Plan</th>
+                            <th class="px-5 py-3">Estado</th>
+                            <th class="px-5 py-3">Dispositivo Vinculado</th>
+                            <th class="px-5 py-3">Fecha Emisión</th>
+                            <th class="px-5 py-3">Fecha Activación</th>
+                            <th class="px-5 py-3 text-right">Acción Soporte</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-100" id="licenses-table-body">
+                        {% for lic in licenses %}
+                        <tr class="hover:bg-slate-50/70 transition-colors">
+                            <td class="px-5 py-3 font-mono font-bold text-slate-900 text-sm">
+                                {{ lic.license_key }}
+                            </td>
+                            <td class="px-5 py-3 font-semibold uppercase text-slate-700">
+                                {{ lic.plan_type }}
+                            </td>
+                            <td class="px-5 py-3">
+                                {% if lic.is_claimed %}
+                                <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-blue-100 text-blue-800">
+                                    Vinculada a Dispositivo
+                                </span>
+                                {% else %}
+                                <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800">
+                                    Disponible / Sin Usar
+                                </span>
+                                {% endif %}
+                            </td>
+                            <td class="px-5 py-3 font-mono text-slate-500">
+                                {% if lic.device_id %}
+                                <span class="truncate max-w-[150px] inline-block" title="{{ lic.device_id }}">{{ lic.device_id[:16] }}...</span>
+                                {% else %}
+                                <span class="text-slate-300">—</span>
+                                {% endif %}
+                            </td>
+                            <td class="px-5 py-3 text-slate-500">{{ lic.created_at[:10] }}</td>
+                            <td class="px-5 py-3 text-slate-500">{{ lic.claimed_at or '—' }}</td>
+                            <td class="px-5 py-3 text-right space-x-1">
+                                {% if lic.is_claimed %}
+                                <button onclick="resetDevice({{ lic.id }})" class="px-2.5 py-1 rounded bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-200 font-semibold text-[11px] transition-colors" title="Libera la clave si el estudiante cambió de computadora">
+                                    Liberar Dispositivo
+                                </button>
+                                {% endif %}
+                                <button onclick="copySingleKey('{{ lic.license_key }}')" class="px-2 py-1 rounded bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-[11px] transition-colors">
+                                    Copiar
+                                </button>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    function copySingleKey(key) {
+        const message = `¡Hola Licenciado(a)! Gracias por tu pago.\nTu clave de acceso premium al Simulador de Notariado CSJ es:\n\n*${key}*\n\nIngresa y actívala en tu computadora aquí:\nhttp://127.0.0.1:5000/activar\n\n(Recuerda que por seguridad queda vinculada a un solo dispositivo). ¡Muchos éxitos en tu estudio!`;
+        navigator.clipboard.writeText(message).then(() => {
+            alert('¡Mensaje con clave copiado al portapapeles!\nListo para pegar en WhatsApp.');
+        });
+    }
+
+    function copyAllPromos() {
+        const keys = [
+            {% for promo in promotional_keys %}
+            "{{ promo.license_key }}",
+            {% endfor %}
+        ];
+        navigator.clipboard.writeText(keys.join('\n')).then(() => {
+            alert('Las 10 claves promocionales han sido copiadas al portapapeles.');
+        });
+    }
+
+    async function generateKey(planType, notes) {
+        try {
+            const res = await fetch('/admin/generar', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ plan_type: planType, notes: notes, count: 1 })
+            });
+            const data = await res.json();
+            if (data.success) {
+                alert(`¡Clave generada con éxito!\nCódigo: ${data.licenses[0].key}`);
+                location.reload();
+            }
+        } catch (e) {
+            console.error(e);
+            alert('Error al generar clave.');
+        }
+    }
+
+    async function generateBatch(count) {
+        if (!confirm(`¿Deseas generar un lote de ${count} claves vitalicias?`)) return;
+        try {
+            const res = await fetch('/admin/generar', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ plan_type: 'vitalicia', notes: 'Lote rápido Admin', count: count })
+            });
+            const data = await res.json();
+            if (data.success) {
+                alert(`¡Se han generado ${count} claves vitalicias exitosamente!`);
+                location.reload();
+            }
+        } catch (e) {
+            console.error(e);
+            alert('Error al generar lote.');
+        }
+    }
+
+    async function resetDevice(licenseId) {
+        if (!confirm('¿Deseas desvincular el dispositivo de esta clave? Esto permitirá que el estudiante la vuelva a activar en un equipo nuevo.')) return;
+        try {
+            const res = await fetch(`/admin/reset-device/${licenseId}`, { method: 'POST' });
+            const data = await res.json();
+            if (data.success) {
+                alert('Dispositivo desvinculado con éxito.');
+                location.reload();
+            }
+        } catch (e) {
+            console.error(e);
+            alert('Error al desvincular.');
+        }
+    }
+
+    async function markCommissionPaid(commId) {
+        const ref = prompt("Ingresa una nota o ID de transacción de Strike (opcional):", "Transferencia Strike completada");
+        if (ref === null) return;
+
+        try {
+            const res = await fetch(`/admin/commissions/mark-paid/${commId}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ payout_reference: ref })
+            });
+            const data = await res.json();
+            if (data.success) {
+                alert('¡Comisión marcada como pagada vía Strike con éxito!');
+                location.reload();
+            }
+        } catch (e) {
+            console.error(e);
+            alert('Error al registrar pago de comisión.');
+        }
+    }
+
+    async function createAmbassadorQuick() {
+        const code = document.getElementById('new-amb-code').value.trim();
+        const name = document.getElementById('new-amb-name').value.trim();
+        const strike = document.getElementById('new-amb-strike').value.trim();
+
+        if (!code || !name || !strike) {
+            alert('Por favor completa código, nombre y usuario de Strike.');
+            return;
+        }
+
+        try {
+            const res = await fetch('/admin/ambassadors/create', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ code, name, strike_handle: strike })
+            });
+            const data = await res.json();
+            if (data.success) {
+                alert(data.message);
+                location.reload();
+            } else {
+                alert(data.error || 'Error al crear embajador.');
+            }
+        } catch (e) {
+            console.error(e);
+            alert('Error de conexión al crear embajador.');
+        }
+    }
+</script>
+{% endblock %}

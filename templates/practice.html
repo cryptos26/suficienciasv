@@ -1,0 +1,124 @@
+{% extends "base.html" %}
+
+{% block title %}Estudio Guiado por Materias | Notariado El Salvador{% endblock %}
+
+{% block content %}
+<div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <!-- Header -->
+    <div class="mb-8">
+        <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-100 text-blue-800 text-xs font-bold uppercase tracking-wider mb-2">
+            <i data-lucide="book-open-check" class="w-4 h-4"></i> Práctica Guiada
+        </div>
+        <h1 class="text-3xl font-extrabold text-slate-900 tracking-tight mb-2">
+            Estudio con Retroalimentación Inmediata
+        </h1>
+        <p class="text-sm text-slate-600">
+            Responde caso por caso sin límite de tiempo y profundiza en los fundamentos jurídicos, leyes aplicables y análisis de trampas de la CSJ.
+        </p>
+    </div>
+
+    <!-- Category Selector Tabs -->
+    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-4 mb-8">
+        <div class="text-xs font-bold uppercase tracking-wider text-slate-400 mb-3">Filtrar por Materia Jurídica:</div>
+        <div class="flex flex-wrap gap-2" id="category-pills">
+            <button type="button" class="cat-filter-btn px-4 py-2 rounded-xl text-xs font-bold bg-blue-700 text-white shadow-sm transition-all" data-cat="all">
+                Todas las Materias
+            </button>
+            {% for cat in categories %}
+            <button type="button" class="cat-filter-btn px-4 py-2 rounded-xl text-xs font-semibold bg-slate-100 text-slate-700 hover:bg-slate-200 transition-all" data-cat="{{ cat.id }}">
+                {{ cat.name }} ({{ cat.question_count }})
+            </button>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Practice Session Box -->
+    <div id="practice-loading" class="py-16 text-center">
+        <div class="inline-block animate-spin text-blue-700 mb-3">
+            <i data-lucide="loader-2" class="w-8 h-8"></i>
+        </div>
+        <div class="text-sm font-medium text-slate-500">Cargando casos prácticos...</div>
+    </div>
+
+    <div id="practice-container" class="hidden space-y-6">
+        <!-- Progress Bar & Score in current session -->
+        <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-4 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">Progreso:</span>
+                <span id="p-progress-text" class="text-sm font-bold text-slate-800">Caso 1 de 10</span>
+            </div>
+            <div class="flex items-center gap-4 text-xs font-semibold">
+                <span class="text-emerald-700 flex items-center gap-1">
+                    <i data-lucide="check-circle" class="w-4 h-4"></i> Acertadas: <span id="p-correct-score">0</span>
+                </span>
+                <span class="text-rose-600 flex items-center gap-1">
+                    <i data-lucide="x-circle" class="w-4 h-4"></i> Falladas: <span id="p-incorrect-score">0</span>
+                </span>
+            </div>
+        </div>
+
+        <!-- Question Card -->
+        <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 sm:p-8">
+            <div class="flex items-center justify-between mb-4 pb-3 border-b border-slate-100">
+                <span id="p-category-badge" class="px-3 py-1 rounded-full text-xs font-semibold bg-blue-50 text-blue-800 border border-blue-100">
+                    Materia
+                </span>
+                <span id="p-difficulty-badge" class="text-xs font-medium text-slate-400">
+                    Dificultad: <strong class="text-slate-600">Media</strong>
+                </span>
+            </div>
+
+            <!-- Case text -->
+            <div class="mb-6">
+                <div class="text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">Caso Práctico:</div>
+                <p id="p-question-text" class="font-serif-legal text-lg sm:text-xl text-slate-900 leading-relaxed">
+                    <!-- Text injected here -->
+                </p>
+            </div>
+
+            <!-- Options -->
+            <div class="space-y-3 mb-6" id="p-options-container">
+                <!-- Injected dynamically -->
+            </div>
+
+            <!-- Action button: Check / Next -->
+            <div class="flex items-center justify-between pt-4 border-t border-slate-100">
+                <button id="p-check-btn" type="button" class="px-6 py-2.5 rounded-xl bg-blue-700 hover:bg-blue-600 text-white font-bold text-sm shadow transition-colors flex items-center gap-2">
+                    <i data-lucide="help-circle" class="w-4 h-4"></i> Comprobar Respuesta
+                </button>
+                <button id="p-next-btn" type="button" class="hidden px-6 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-sm shadow transition-colors flex items-center gap-2">
+                    <span>Siguiente Caso</span> <i data-lucide="arrow-right" class="w-4 h-4"></i>
+                </button>
+            </div>
+
+            <!-- Legal Justification Reveal Box (Hidden initially) -->
+            <div id="p-justification-box" class="hidden mt-6 rounded-xl border border-amber-300 bg-amber-50/60 p-6 space-y-4 animate-in fade-in duration-200">
+                <div class="flex items-center gap-2">
+                    <div class="w-8 h-8 rounded-lg bg-amber-200 text-amber-900 flex items-center justify-center font-bold">
+                        <i data-lucide="scale" class="w-4 h-4"></i>
+                    </div>
+                    <div>
+                        <div class="text-xs font-bold uppercase tracking-wider text-amber-900">Fundamentación Jurídica Oficial</div>
+                        <div id="p-legal-basis" class="text-xs font-semibold text-amber-800">Base Legal</div>
+                    </div>
+                </div>
+
+                <p id="p-justification-text" class="text-sm text-slate-800 leading-relaxed font-serif-legal">
+                    <!-- Justification injected here -->
+                </p>
+
+                <div id="p-distractors-box" class="pt-3 border-t border-amber-200/80 text-xs text-slate-600 leading-relaxed">
+                    <strong class="text-slate-900 font-bold block mb-1 flex items-center gap-1">
+                        <i data-lucide="alert-triangle" class="w-3.5 h-3.5 text-amber-600"></i> Desglose de los Distractores:
+                    </strong>
+                    <span id="p-distractors-text"></span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/practice.js') }}"></script>
+{% endblock %}
