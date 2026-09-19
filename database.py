@@ -5,7 +5,20 @@ import secrets
 from datetime import datetime
 from questions_seed import CATEGORIES, QUESTIONS, FLASHCARDS
 
-DB_PATH = os.path.join(os.path.dirname(__file__), "notariado.db")
+ORIGINAL_DB_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), "notariado.db"))
+DB_PATH = ORIGINAL_DB_PATH
+
+# En entornos Serverless de Vercel / Lambda, habilitar /tmp/notariado.db con permisos de escritura
+if os.environ.get("VERCEL") or os.environ.get("AWS_LAMBDA_FUNCTION_NAME") or os.environ.get("VERCEL_ENV"):
+    try:
+        tmp_db = "/tmp/notariado.db"
+        if not os.path.exists(tmp_db) and os.path.exists(ORIGINAL_DB_PATH):
+            import shutil
+            shutil.copyfile(ORIGINAL_DB_PATH, tmp_db)
+        if os.path.exists(tmp_db):
+            DB_PATH = tmp_db
+    except Exception as e:
+        print(f"[DATABASE] /tmp init warning: {e}")
 
 # --- INICIALIZACIÓN DE FIREBASE FIRESTORE ---
 HAS_FIREBASE = False
@@ -46,9 +59,21 @@ except Exception as e:
     HAS_FIREBASE = False
 
 def get_db_connection():
-    conn = sqlite3.connect(DB_PATH)
+    global DB_PATH
+    if os.environ.get("VERCEL") or os.environ.get("AWS_LAMBDA_FUNCTION_NAME") or os.environ.get("VERCEL_ENV") or not os.access(os.path.dirname(DB_PATH) or ".", os.W_OK):
+        try:
+            tmp_db = "/tmp/notariado.db"
+            if not os.path.exists(tmp_db) and os.path.exists(ORIGINAL_DB_PATH):
+                import shutil
+                shutil.copyfile(ORIGINAL_DB_PATH, tmp_db)
+            if os.path.exists(tmp_db):
+                DB_PATH = tmp_db
+        except Exception as e:
+            print(f"[DATABASE] /tmp get_db_connection warning: {e}")
+    conn = sqlite3.connect(DB_PATH, timeout=30.0)
     conn.row_factory = sqlite3.Row
     return conn
+
 
 def generate_key_code(prefix="NOT"):
     chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789" # Excluded O, 0, I, 1 to prevent reading confusion
@@ -281,120 +306,247 @@ def init_db():
 def validate_or_activate_license(license_key, device_id):
     """
     Validates a license key and binds it to a SINGLE device.
-    - If unclaimed: claims and locks to device_id.
-    - If already claimed: ensures device_id matches (prevents multi-device sharing).
+    Supports Firestore first, with fallback to SQLite.
     """
     if not license_key or not device_id:
         return {"success": False, "error": "Clave de licencia y dispositivo requeridos."}
 
     license_key = license_key.strip().upper()
     device_id = device_id.strip()
-
-    conn = get_db_connection()
-    cursor = conn.cursor()
-
-    cursor.execute("SELECT * FROM licenses WHERE license_key = ?", (license_key,))
-    lic = cursor.fetchone()
-
-    if not lic:
-        conn.close()
-        return {"success": False, "error": "La clave de licencia ingresada no existe."}
-
-    lic = dict(lic)
-
-    if not lic["is_active"]:
-        conn.close()
-        return {"success": False, "error": "Esta clave de licencia ha sido desactivada por el administrador."}
-
     now_str = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
-    # Case 1: Key is already claimed
-    if lic["is_claimed"]:
-        if lic["device_id"] != device_id:
+    # --- 1. Firestore Attempt ---
+    if HAS_FIREBASE:
+        try:
+            doc_ref = firestore_client.collection("licenses").document(license_key)
+            doc = doc_ref.get()
+            if doc.exists:
+                lic = doc.to_dict()
+                if not lic.get("is_active", True):
+                    return {"success": False, "error": "Esta clave de licencia ha sido desactivada por el administrador."}
+
+                # Case 1: Key is already claimed
+                if lic.get("is_claimed", False):
+                    if lic.get("device_id") != device_id:
+                        return {
+                            "success": False,
+                            "error": "Esta clave de licencia ya está vinculada a otro dispositivo. Por directrices de seguridad, la licencia es personal e intransferible a un solo equipo.",
+                            "is_locked_other_device": True
+                        }
+                    else:
+                        doc_ref.update({"last_seen_at": now_str})
+                        return {
+                            "success": True,
+                            "message": "Licencia verificada en este dispositivo.",
+                            "plan_type": lic.get("plan_type", "vitalicia"),
+                            "duration_days": lic.get("duration_days", -1),
+                            "claimed_at": lic.get("claimed_at")
+                        }
+
+                # Case 2: New / unclaimed -> bind to this device
+                doc_ref.update({
+                    "is_claimed": True,
+                    "claimed_at": now_str,
+                    "device_id": device_id,
+                    "last_seen_at": now_str
+                })
+                return {
+                    "success": True,
+                    "message": "¡Licencia activada con éxito y vinculada a este dispositivo!",
+                    "plan_type": lic.get("plan_type", "vitalicia"),
+                    "duration_days": lic.get("duration_days", -1),
+                    "claimed_at": now_str
+                }
+        except Exception as e:
+            print(f"[FIREBASE ERROR] validate_or_activate_license: {e}")
+
+    # --- 2. SQLite Fallback ---
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        cursor.execute("SELECT * FROM licenses WHERE license_key = ?", (license_key,))
+        lic = cursor.fetchone()
+
+        if not lic:
             conn.close()
-            return {
-                "success": False,
-                "error": "Esta clave de licencia ya está vinculada a otro dispositivo. Por directrices de seguridad, la licencia es personal e intransferible a un solo equipo.",
-                "is_locked_other_device": True
-            }
-        else:
-            # Same device accessing again
-            cursor.execute("UPDATE licenses SET last_seen_at = ? WHERE id = ?", (now_str, lic["id"]))
+            return {"success": False, "error": "La clave de licencia ingresada no existe."}
+
+        lic = dict(lic)
+        if not lic["is_active"]:
+            conn.close()
+            return {"success": False, "error": "Esta clave de licencia ha sido desactivada por el administrador."}
+
+        if lic["is_claimed"]:
+            if lic["device_id"] != device_id:
+                conn.close()
+                return {
+                    "success": False,
+                    "error": "Esta clave de licencia ya está vinculada a otro dispositivo. Por directrices de seguridad, la licencia es personal e intransferible a un solo equipo.",
+                    "is_locked_other_device": True
+                }
+            else:
+                try:
+                    cursor.execute("UPDATE licenses SET last_seen_at = ? WHERE id = ?", (now_str, lic["id"]))
+                    conn.commit()
+                except Exception:
+                    pass
+                conn.close()
+                return {
+                    "success": True,
+                    "message": "Licencia verificada en este dispositivo.",
+                    "plan_type": lic["plan_type"],
+                    "duration_days": lic["duration_days"],
+                    "claimed_at": lic["claimed_at"]
+                }
+
+        # Unclaimed -> bind permanently
+        try:
+            cursor.execute("""
+                UPDATE licenses
+                SET is_claimed = 1,
+                    claimed_at = ?,
+                    device_id = ?,
+                    last_seen_at = ?
+                WHERE id = ?
+            """, (now_str, device_id, now_str, lic["id"]))
             conn.commit()
-            conn.close()
-            return {
-                "success": True,
-                "message": "Licencia verificada en este dispositivo.",
-                "plan_type": lic["plan_type"],
-                "duration_days": lic["duration_days"],
-                "claimed_at": lic["claimed_at"]
-            }
+        except Exception as ex:
+            print(f"[DATABASE WRITE ERROR] {ex}")
+        conn.close()
 
-    # Case 2: Key is new / unclaimed -> Bind permanently to this device!
-    cursor.execute("""
-        UPDATE licenses
-        SET is_claimed = 1,
-            claimed_at = ?,
-            device_id = ?,
-            last_seen_at = ?
-        WHERE id = ?
-    """, (now_str, device_id, now_str, lic["id"]))
-    conn.commit()
-    conn.close()
+        # If Firebase is active, also sync to Firestore
+        if HAS_FIREBASE:
+            try:
+                firestore_client.collection("licenses").document(license_key).set({
+                    "license_key": license_key,
+                    "plan_type": lic["plan_type"],
+                    "duration_days": lic["duration_days"],
+                    "created_at": lic.get("created_at", now_str),
+                    "is_active": True,
+                    "is_claimed": True,
+                    "claimed_at": now_str,
+                    "device_id": device_id,
+                    "last_seen_at": now_str,
+                    "notes": lic.get("notes", "")
+                })
+            except Exception:
+                pass
 
-    return {
-        "success": True,
-        "message": "¡Licencia activada con éxito y vinculada a este dispositivo!",
-        "plan_type": lic["plan_type"],
-        "duration_days": lic["duration_days"],
-        "claimed_at": now_str
-    }
+        return {
+            "success": True,
+            "message": "¡Licencia activada con éxito y vinculada a este dispositivo!",
+            "plan_type": lic["plan_type"],
+            "duration_days": lic["duration_days"],
+            "claimed_at": now_str
+        }
+    except Exception as e:
+        print(f"[DATABASE ERROR] validate_or_activate_license: {e}")
+        return {"success": False, "error": "Error interno al procesar licencia."}
 
 def check_device_license(device_id):
     """Checks if a device has an active bound license."""
     if not device_id:
         return None
-    conn = get_db_connection()
-    cursor = conn.cursor()
-    cursor.execute("""
-        SELECT * FROM licenses 
-        WHERE device_id = ? AND is_active = 1 AND is_claimed = 1
-        ORDER BY id DESC LIMIT 1
-    """, (device_id,))
-    row = cursor.fetchone()
-    conn.close()
-    return dict(row) if row else None
+
+    dev_clean = str(device_id).strip()
+
+    if HAS_FIREBASE:
+        try:
+            docs = firestore_client.collection("licenses")\
+                .where("device_id", "==", dev_clean)\
+                .stream()
+            for doc in docs:
+                data = doc.to_dict()
+                if data.get("is_active", True) and data.get("is_claimed", False):
+                    return data
+        except Exception as e:
+            print(f"[FIREBASE ERROR] check_device_license: {e}")
+
+
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        cursor.execute("""
+            SELECT * FROM licenses 
+            WHERE device_id = ? AND is_active = 1 AND is_claimed = 1
+            ORDER BY id DESC LIMIT 1
+        """, (dev_clean,))
+        row = cursor.fetchone()
+        conn.close()
+        return dict(row) if row else None
+    except Exception as e:
+        print(f"[DATABASE ERROR] check_device_license: {e}")
+        return None
 
 def get_promotional_keys():
-    """Returns the 10 seeded promotional lifetime keys."""
-    conn = get_db_connection()
-    cursor = conn.cursor()
-    cursor.execute("""
-        SELECT id, license_key, plan_type, duration_days, created_at, is_claimed, claimed_at, notes 
-        FROM licenses 
-        WHERE notes LIKE '%Promocional%'
-        ORDER BY id ASC
-    """)
-    rows = cursor.fetchall()
-    conn.close()
-    return [dict(r) for r in rows]
+    """Returns seeded promotional lifetime keys."""
+    if HAS_FIREBASE:
+        try:
+            docs = firestore_client.collection("licenses").stream()
+            promo = []
+            for d in docs:
+                dt = d.to_dict()
+                if "Promocional" in dt.get("notes", "") or "Tarjeta" in dt.get("notes", ""):
+                    promo.append(dt)
+            if promo:
+                promo.sort(key=lambda x: str(x.get("license_key", "")))
+                return promo
+        except Exception as e:
+            print(f"[FIREBASE ERROR] get_promotional_keys: {e}")
+
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        cursor.execute("""
+            SELECT id, license_key, plan_type, duration_days, created_at, is_claimed, claimed_at, notes 
+            FROM licenses 
+            WHERE notes LIKE '%Promocional%' OR notes LIKE '%Tarjeta%'
+            ORDER BY id ASC
+        """)
+        rows = cursor.fetchall()
+        conn.close()
+        return [dict(r) for r in rows]
+    except Exception:
+        return []
 
 def admin_get_all_licenses():
-    conn = get_db_connection()
-    cursor = conn.cursor()
-    cursor.execute("""
-        SELECT id, license_key, plan_type, duration_days, created_at, is_active, 
-               is_claimed, claimed_at, device_id, last_seen_at, notes
-        FROM licenses
-        ORDER BY id DESC
-    """)
-    rows = cursor.fetchall()
-    conn.close()
-    return [dict(r) for r in rows]
+    if HAS_FIREBASE:
+        try:
+            docs = firestore_client.collection("licenses").stream()
+            results = [d.to_dict() for d in docs]
+            if results:
+                results.sort(key=lambda x: str(x.get("created_at", "")), reverse=True)
+                return results
+        except Exception as e:
+            print(f"[FIREBASE ERROR] admin_get_all_licenses: {e}")
 
-def admin_create_license(plan_type="30_dias", duration_days=30, notes=""):
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        cursor.execute("""
+            SELECT id, license_key, plan_type, duration_days, created_at, is_active, 
+                   is_claimed, claimed_at, device_id, last_seen_at, notes
+            FROM licenses
+            ORDER BY id DESC
+        """)
+        rows = cursor.fetchall()
+        conn.close()
+        return [dict(r) for r in rows]
+    except Exception:
+        return []
+
+def admin_create_license(plan_type="60_dias", duration_days=None, notes=""):
+    if duration_days is None:
+        if plan_type == "vitalicia":
+            duration_days = -1
+        elif plan_type == "60_dias" or plan_type == "90_dias":
+            duration_days = 60
+        else:
+            duration_days = 30
+
     prefix_map = {
         "vitalicia": "NOT-VITA",
+        "60_dias": "NOT-BIME",
         "90_dias": "NOT-TRIM",
         "30_dias": "NOT-MENS"
     }
@@ -402,31 +554,85 @@ def admin_create_license(plan_type="30_dias", duration_days=30, notes=""):
     key = generate_key_code(prefix=prefix)
     now_str = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
-    conn = get_db_connection()
-    cursor = conn.cursor()
-    cursor.execute("""
-        INSERT INTO licenses (license_key, plan_type, duration_days, created_at, is_active, is_claimed, notes)
-        VALUES (?, ?, ?, ?, 1, 0, ?)
-    """, (key, plan_type, duration_days, now_str, notes))
-    lic_id = cursor.lastrowid
-    conn.commit()
-    conn.close()
-    return {"id": lic_id, "key": key, "plan_type": plan_type, "duration_days": duration_days}
+    lic_data = {
+        "license_key": key,
+        "plan_type": plan_type,
+        "duration_days": duration_days,
+        "created_at": now_str,
+        "is_active": True,
+        "is_claimed": False,
+        "claimed_at": None,
+        "device_id": None,
+        "last_seen_at": None,
+        "notes": notes
+    }
+
+    if HAS_FIREBASE:
+        try:
+            firestore_client.collection("licenses").document(key).set(lic_data)
+        except Exception as e:
+            print(f"[FIREBASE ERROR] admin_create_license: {e}")
+
+    lic_id = None
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        cursor.execute("""
+            INSERT INTO licenses (license_key, plan_type, duration_days, created_at, is_active, is_claimed, notes)
+            VALUES (?, ?, ?, ?, 1, 0, ?)
+        """, (key, plan_type, duration_days, now_str, notes))
+        lic_id = cursor.lastrowid
+        conn.commit()
+        conn.close()
+    except Exception as ex:
+        print(f"[DATABASE WRITE ERROR] admin_create_license: {ex}")
+
+    return {"id": lic_id or key, "key": key, "plan_type": plan_type, "duration_days": duration_days}
 
 def admin_reset_device(license_id):
     """Allows admin to unbind a license from a device if customer legitimately changed device."""
-    conn = get_db_connection()
-    cursor = conn.cursor()
-    cursor.execute("""
-        UPDATE licenses
-        SET device_id = NULL,
-            is_claimed = 0,
-            claimed_at = NULL
-        WHERE id = ?
-    """, (license_id,))
-    conn.commit()
-    conn.close()
-    return True
+    lic_id_str = str(license_id).strip()
+
+    if HAS_FIREBASE:
+        try:
+            # Check by doc ID (license_key) or search
+            lic_ref = firestore_client.collection("licenses").document(lic_id_str)
+            if lic_ref.get().exists:
+                lic_ref.update({
+                    "device_id": None,
+                    "is_claimed": False,
+                    "claimed_at": None
+                })
+                return True
+            else:
+                # Query by field
+                docs = firestore_client.collection("licenses").where("license_key", "==", lic_id_str).stream()
+                for d in docs:
+                    d.reference.update({
+                        "device_id": None,
+                        "is_claimed": False,
+                        "claimed_at": None
+                    })
+                    return True
+        except Exception as e:
+            print(f"[FIREBASE ERROR] admin_reset_device: {e}")
+
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        cursor.execute("""
+            UPDATE licenses
+            SET device_id = NULL,
+                is_claimed = 0,
+                claimed_at = NULL
+            WHERE id = ? OR license_key = ?
+        """, (license_id, lic_id_str))
+        conn.commit()
+        conn.close()
+        return True
+    except Exception as ex:
+        print(f"[DATABASE ERROR] admin_reset_device: {ex}")
+        return True
 
 # --- EXAM AND QUESTIONS FUNCTIONS ---
 
@@ -503,69 +709,205 @@ def get_flashcards(category_id=None):
     return [dict(r) for r in rows]
 
 def save_exam_attempt(score, total, correct, incorrect, time_spent, passed, answers_detail):
-    conn = get_db_connection()
-    cursor = conn.cursor()
     now_str = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    cursor.execute("""
-        INSERT INTO exam_attempts (
-            created_at, score, total_questions, correct_count, incorrect_count,
-            time_spent_seconds, passed, answers_json
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-    """, (
-        now_str, score, total, correct, incorrect, time_spent, 1 if passed else 0,
-        json.dumps(answers_detail, ensure_ascii=False)
-    ))
-    attempt_id = cursor.lastrowid
-    conn.commit()
-    conn.close()
-    return attempt_id
+    answers_json = json.dumps(answers_detail, ensure_ascii=False) if isinstance(answers_detail, (dict, list)) else str(answers_detail)
+    attempt_data = {
+        "created_at": now_str,
+        "score": score,
+        "total_questions": total,
+        "correct_count": correct,
+        "incorrect_count": incorrect,
+        "time_spent_seconds": time_spent,
+        "passed": 1 if passed else 0,
+        "answers_json": answers_json
+    }
+
+    if HAS_FIREBASE:
+        try:
+            doc_ref = firestore_client.collection("exam_attempts").document()
+            attempt_data_fs = dict(attempt_data)
+            attempt_data_fs["id"] = doc_ref.id
+            doc_ref.set(attempt_data_fs)
+            
+            # Persist locally in SQLite if writable
+            try:
+                conn = get_db_connection()
+                cursor = conn.cursor()
+                cursor.execute("""
+                    INSERT INTO exam_attempts (
+                        created_at, score, total_questions, correct_count, incorrect_count,
+                        time_spent_seconds, passed, answers_json
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                """, (
+                    now_str, score, total, correct, incorrect, time_spent, 1 if passed else 0,
+                    answers_json
+                ))
+                conn.commit()
+                conn.close()
+            except Exception:
+                pass
+                
+            return doc_ref.id
+        except Exception as e:
+            print(f"[FIREBASE ERROR] save_exam_attempt: {e}")
+
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        cursor.execute("""
+            INSERT INTO exam_attempts (
+                created_at, score, total_questions, correct_count, incorrect_count,
+                time_spent_seconds, passed, answers_json
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        """, (
+            now_str, score, total, correct, incorrect, time_spent, 1 if passed else 0,
+            answers_json
+        ))
+        attempt_id = cursor.lastrowid
+        conn.commit()
+        conn.close()
+        return attempt_id
+    except Exception as ex:
+        print(f"[DATABASE ERROR] save_exam_attempt SQLite: {ex}")
+        import uuid
+        return f"local_{uuid.uuid4().hex[:8]}"
 
 def get_exam_history(limit=20):
-    conn = get_db_connection()
-    cursor = conn.cursor()
-    cursor.execute("""
-        SELECT id, created_at, score, total_questions, correct_count,
-               incorrect_count, time_spent_seconds, passed
-        FROM exam_attempts
-        ORDER BY id DESC
-        LIMIT ?
-    """, (limit,))
-    rows = cursor.fetchall()
-    conn.close()
-    return [dict(r) for r in rows]
+    if HAS_FIREBASE:
+        try:
+            docs = firestore_client.collection("exam_attempts").stream()
+            results = []
+            for d in docs:
+                item = d.to_dict()
+                if "id" not in item:
+                    item["id"] = d.id
+                results.append(item)
+            if results:
+                results.sort(key=lambda x: str(x.get("created_at", "")), reverse=True)
+                return results[:limit]
+        except Exception as e:
+            print(f"[FIREBASE ERROR] get_exam_history: {e}")
+
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        cursor.execute("""
+            SELECT id, created_at, score, total_questions, correct_count,
+                   incorrect_count, time_spent_seconds, passed
+            FROM exam_attempts
+            ORDER BY id DESC
+            LIMIT ?
+        """, (limit,))
+        rows = cursor.fetchall()
+        conn.close()
+        return [dict(r) for r in rows]
+    except Exception:
+        return []
 
 def get_exam_attempt_by_id(attempt_id):
-    conn = get_db_connection()
-    cursor = conn.cursor()
-    cursor.execute("SELECT * FROM exam_attempts WHERE id = ?", (attempt_id,))
-    row = cursor.fetchone()
-    conn.close()
-    if row:
-        data = dict(row)
-        data["answers_detail"] = json.loads(data["answers_json"])
-        return data
+    if not attempt_id:
+        return None
+    attempt_id_str = str(attempt_id).strip()
+
+    if HAS_FIREBASE:
+        try:
+            doc = firestore_client.collection("exam_attempts").document(attempt_id_str).get()
+            if doc.exists:
+                data = doc.to_dict()
+                if "id" not in data:
+                    data["id"] = doc.id
+                if "answers_json" in data and isinstance(data["answers_json"], str):
+                    try:
+                        data["answers_detail"] = json.loads(data["answers_json"])
+                    except Exception:
+                        data["answers_detail"] = {}
+                elif "answers_detail" not in data:
+                    data["answers_detail"] = {}
+                return data
+
+            if attempt_id_str.isdigit():
+                docs = firestore_client.collection("exam_attempts").where("id", "==", int(attempt_id_str)).stream()
+                for d in docs:
+                    data = d.to_dict()
+                    data["id"] = d.id
+                    if "answers_json" in data and isinstance(data["answers_json"], str):
+                        try:
+                            data["answers_detail"] = json.loads(data["answers_json"])
+                        except Exception:
+                            data["answers_detail"] = {}
+                    return data
+        except Exception as e:
+            print(f"[FIREBASE ERROR] get_exam_attempt_by_id: {e}")
+
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        cursor.execute("SELECT * FROM exam_attempts WHERE id = ?", (attempt_id_str,))
+        row = cursor.fetchone()
+        conn.close()
+        if row:
+            data = dict(row)
+            try:
+                data["answers_detail"] = json.loads(data["answers_json"])
+            except Exception:
+                data["answers_detail"] = {}
+            return data
+    except Exception as ex:
+        print(f"[DATABASE ERROR] get_exam_attempt_by_id SQLite: {ex}")
+
     return None
 
 def get_dashboard_stats():
-    conn = get_db_connection()
-    cursor = conn.cursor()
-    
-    cursor.execute("SELECT COUNT(*), AVG(score), SUM(passed) FROM exam_attempts")
-    total_attempts, avg_score, passed_count = cursor.fetchone()
-    
-    cursor.execute("SELECT COUNT(*) FROM questions")
-    total_questions = cursor.fetchone()[0]
-    
-    cursor.execute("SELECT COUNT(*) FROM flashcards")
-    total_flashcards = cursor.fetchone()[0]
+    total_attempts = 0
+    total_score = 0.0
+    passed_count = 0
 
-    conn.close()
-    
-    total_attempts = total_attempts or 0
-    avg_score = round(avg_score, 1) if avg_score else 0.0
-    passed_count = passed_count or 0
+    if HAS_FIREBASE:
+        try:
+            docs = list(firestore_client.collection("exam_attempts").stream())
+            total_attempts = len(docs)
+            for d in docs:
+                data = d.to_dict()
+                total_score += float(data.get("score", 0))
+                if data.get("passed") in (1, True, "1"):
+                    passed_count += 1
+        except Exception as e:
+            print(f"[FIREBASE ERROR] get_dashboard_stats: {e}")
+
+    if total_attempts == 0:
+        try:
+            conn = get_db_connection()
+            cursor = conn.cursor()
+            cursor.execute("SELECT COUNT(*), AVG(score), SUM(passed) FROM exam_attempts")
+            row = cursor.fetchone()
+            if row and row[0]:
+                total_attempts = row[0]
+                total_score = (row[1] or 0.0) * total_attempts
+                passed_count = row[2] or 0
+            conn.close()
+        except Exception:
+            pass
+
+    total_questions = len(QUESTIONS)
+    total_flashcards = len(FLASHCARDS)
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        cursor.execute("SELECT COUNT(*) FROM questions")
+        tq = cursor.fetchone()[0]
+        if tq > 0:
+            total_questions = tq
+        cursor.execute("SELECT COUNT(*) FROM flashcards")
+        tf = cursor.fetchone()[0]
+        if tf > 0:
+            total_flashcards = tf
+        conn.close()
+    except Exception:
+        pass
+
+    avg_score = round(total_score / total_attempts, 1) if total_attempts > 0 else 0.0
     pass_rate = round((passed_count / total_attempts) * 100, 1) if total_attempts > 0 else 0.0
-    
+
     return {
         "total_attempts": total_attempts,
         "avg_score": avg_score,
@@ -574,6 +916,7 @@ def get_dashboard_stats():
         "total_questions": total_questions,
         "total_flashcards": total_flashcards
     }
+
 
 def create_order(order_id, buyer_name, buyer_email, buyer_phone, plan_type, amount_usd, license_key, payment_method="tarjeta", payment_reference="", referral_code=""):
     now_str = datetime.now().strftime("%Y-%m-%d %H:%M:%S")

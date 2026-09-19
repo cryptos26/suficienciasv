@@ -4,6 +4,47 @@
 
 {% block content %}
 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <!-- Countdown to Official CSJ Exam -->
+    <div class="mb-8 p-5 sm:p-6 rounded-2xl bg-gradient-to-r from-navy-950 via-slate-900 to-navy-900 border border-gold-500/40 text-white shadow-xl flex flex-col md:flex-row items-center justify-between gap-6">
+        <div class="flex items-center gap-4 text-center md:text-left">
+            <div class="w-12 h-12 rounded-2xl bg-gold-500/20 border border-gold-500/50 flex items-center justify-center shrink-0 text-gold-400 shadow-inner">
+                <i data-lucide="timer" class="w-6 h-6"></i>
+            </div>
+            <div>
+                <div class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-gold-500/20 text-gold-400 text-[11px] font-bold uppercase tracking-wider mb-1">
+                    <span class="w-2 h-2 rounded-full bg-gold-400 animate-pulse"></span> Convocatoria Notariado 2026
+                </div>
+                <h3 class="text-base sm:text-lg font-black text-white tracking-tight">
+                    Cuenta Regresiva al Examen Oficial de la CSJ
+                </h3>
+                <p class="text-xs text-slate-300">
+                    Fecha oficial estimada: <strong class="text-gold-300">{{ exam_date_label }}</strong> • ¡El tiempo avanza, intensifica tu estudio diario!
+                </p>
+            </div>
+        </div>
+        <div class="flex items-center gap-2 sm:gap-3 text-center" id="index-countdown">
+            <div class="bg-navy-800/90 border border-gold-500/20 rounded-xl px-3.5 py-2 min-w-[62px] shadow-sm">
+                <div class="text-2xl sm:text-3xl font-black text-gold-400 font-mono tracking-tight" id="home-cd-days">--</div>
+                <div class="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Días</div>
+            </div>
+            <div class="text-gold-400 font-black text-xl">:</div>
+            <div class="bg-navy-800/90 border border-white/10 rounded-xl px-3.5 py-2 min-w-[62px] shadow-sm">
+                <div class="text-2xl sm:text-3xl font-black text-white font-mono tracking-tight" id="home-cd-hours">--</div>
+                <div class="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Horas</div>
+            </div>
+            <div class="text-gold-400 font-black text-xl">:</div>
+            <div class="bg-navy-800/90 border border-white/10 rounded-xl px-3.5 py-2 min-w-[62px] shadow-sm">
+                <div class="text-2xl sm:text-3xl font-black text-white font-mono tracking-tight" id="home-cd-mins">--</div>
+                <div class="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Min</div>
+            </div>
+            <div class="text-gold-400 font-black text-xl">:</div>
+            <div class="bg-navy-800/90 border border-gold-500/20 rounded-xl px-3.5 py-2 min-w-[62px] shadow-sm">
+                <div class="text-2xl sm:text-3xl font-black text-gold-400 font-mono tracking-tight" id="home-cd-secs">--</div>
+                <div class="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Seg</div>
+            </div>
+        </div>
+    </div>
+
     <!-- Hero Banner -->
     <div class="bg-gradient-to-r from-navy-950 via-navy-900 to-blue-900 rounded-2xl p-6 sm:p-8 text-white shadow-xl mb-8 border border-slate-700/50 relative overflow-hidden">
         <div class="relative z-10 max-w-3xl">
@@ -235,3 +276,43 @@
     {% endif %}
 </div>
 {% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const targetDateStr = "{{ exam_target_date }}";
+        const target = new Date(targetDateStr).getTime();
+        const daysEl = document.getElementById('home-cd-days');
+        const hoursEl = document.getElementById('home-cd-hours');
+        const minsEl = document.getElementById('home-cd-mins');
+        const secsEl = document.getElementById('home-cd-secs');
+
+        function updateTicker() {
+            const now = new Date().getTime();
+            const diff = target - now;
+            if (diff <= 0) {
+                if (daysEl) daysEl.textContent = '0';
+                if (hoursEl) hoursEl.textContent = '00';
+                if (minsEl) minsEl.textContent = '00';
+                if (secsEl) secsEl.textContent = '00';
+                return;
+            }
+            const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const mins = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+            const secs = Math.floor((diff % (1000 * 60)) / 1000);
+
+            const pad = (n) => String(n).padStart(2, '0');
+
+            if (daysEl) daysEl.textContent = days;
+            if (hoursEl) hoursEl.textContent = pad(hours);
+            if (minsEl) minsEl.textContent = pad(mins);
+            if (secsEl) secsEl.textContent = pad(secs);
+        }
+
+        updateTicker();
+        setInterval(updateTicker, 1000);
+    });
+</script>
+{% endblock %}
+

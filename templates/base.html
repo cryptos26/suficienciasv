@@ -37,9 +37,18 @@
                 devId = 'dev_' + Math.random().toString(36).substring(2, 12) + '_' + Date.now().toString(36);
                 localStorage.setItem('notariado_device_id', devId);
             }
-            document.cookie = "notariado_device_id=" + devId + "; path=/; max-age=" + (365*24*3600);
+            document.cookie = "notariado_device_id=" + devId + "; path=/; max-age=" + (365*24*3600) + "; SameSite=Lax";
             window.NotariadoAuth = {
-                getDeviceId: function() { return devId; }
+                getDeviceId: function() { return devId; },
+                setLicensed: function(val) { 
+                    try { localStorage.setItem('notariado_licensed', val ? '1' : '0'); } catch(e){} 
+                },
+                isLicensed: function() { 
+                    try { return localStorage.getItem('notariado_licensed') === '1'; } catch(e){ return false; } 
+                },
+                getLicenseKey: function() {
+                    try { return localStorage.getItem('notariado_license_key') || ''; } catch(e){ return ''; }
+                }
             };
         })();
     </script>

@@ -22,6 +22,11 @@ NEQUI_HOLDER = os.environ.get("PAYMENT_NEQUI_HOLDER", "Milton R.")
 WOMPI_ENABLED = False
 WOMPI_PAYMENT_LINK = os.environ.get("PAYMENT_WOMPI_LINK", "")
 
+# Configuración de Cuenta Regresiva al Examen Oficial CSJ
+EXAM_TARGET_DATE = os.environ.get("EXAM_TARGET_DATE", "2026-11-22T08:00:00")
+EXAM_DATE_LABEL = "22 de Noviembre, 2026"
+
+# Cuentas bancarias verificadas (Únicamente Banco Agrícola)
 BANK_ACCOUNTS = [
     {
         "bank_name": "Banco Agrícola",
@@ -29,42 +34,48 @@ BANK_ACCOUNTS = [
         "account_number": "3115009033",
         "mobile_transfer": "7265-9216 (Transferencia 365 Móvil)",
         "holder_name": "Milton R.",
-        "instructions": "Transferencia a Cuenta # 3115009033, Transferencia 365 Móvil al 7265-9216 o App Banco Agrícola."
-    },
-    {
-        "bank_name": "BAC Credomatic",
-        "account_type": "Transferencia Interbancaria 365",
-        "account_number": "Disponible a solicitud",
-        "mobile_transfer": "7265-9216",
-        "holder_name": "Milton R.",
-        "instructions": "Transferencia UNI / 365 hacia Banco Agrícola o consultar vía WhatsApp."
+        "instructions": "Transferencia a Cuenta # 3115009033, Transferencia 365 Móvil al 7265-9216 o desde App Banco Agrícola."
     }
 ]
 
 PLANS = {
     "30_dias": {
-        "name": "Plan 30 Días",
+        "name": "Plan 30 Días (Repaso Final)",
         "price_usd": 19.99,
         "duration_days": 30,
+        "badge": "Repaso Final",
         "description": "Repaso intensivo final para el mes previo a la prueba CSJ."
     },
-    "90_dias": {
-        "name": "Plan 90 Días",
-        "price_usd": 34.99,
-        "duration_days": 90,
-        "description": "3 meses de preparación integral con todas las materias y casos."
-    },
     "vitalicia": {
-        "name": "Acceso Vitalicio",
-        "price_usd": 49.99,
+        "name": "Acceso Premium Total (Hasta Aprobar)",
+        "price_usd": 34.99,
         "duration_days": -1,
-        "description": "Acceso ilimitado sin caducidad hasta aprobar el examen de la CSJ."
+        "badge": "Oferta Especial CSJ 2026",
+        "description": "Acceso ilimitado y permanente sin fecha de caducidad a todas las materias, preguntas y casos prácticos hasta aprobar el examen CSJ."
+    },
+    # Alias de compatibilidad
+    "60_dias": {
+        "name": "Acceso Premium Total (Hasta Aprobar)",
+        "price_usd": 34.99,
+        "duration_days": -1,
+        "badge": "Oferta Especial CSJ 2026",
+        "description": "Acceso ilimitado y permanente sin fecha de caducidad a todas las materias, preguntas y casos prácticos hasta aprobar el examen CSJ."
+    },
+    "90_dias": {
+        "name": "Acceso Premium Total (Hasta Aprobar)",
+        "price_usd": 34.99,
+        "duration_days": -1,
+        "badge": "Oferta Especial CSJ 2026",
+        "description": "Acceso ilimitado y permanente sin fecha de caducidad a todas las materias, preguntas y casos prácticos hasta aprobar el examen CSJ."
     }
 }
+
 
 def get_payment_summary():
     return {
         "whatsapp_phone": WHATSAPP_PHONE,
+        "exam_target_date": EXAM_TARGET_DATE,
+        "exam_date_label": EXAM_DATE_LABEL,
         "strike": {
             "username": STRIKE_USERNAME,
             "profile_url": STRIKE_PROFILE_URL,

@@ -83,6 +83,9 @@
                     </label>
                 </div>
 
+                <!-- Activation Status & Error Feedback -->
+                <div id="activation-feedback" class="hidden p-4 rounded-xl text-xs font-medium transition-all"></div>
+
                 <button 
                     type="submit" 
                     id="submit-activate-btn"
@@ -150,12 +153,20 @@
 
                 const data = await res.json();
                 if (data.success) {
-                    feedback.className = 'p-4 rounded-xl text-xs font-semibold bg-emerald-100 text-emerald-900 border border-emerald-300';
-                    feedback.innerHTML = `<strong>¡Excelente!</strong> ${data.message} Redirigiendo al panel...`;
-                    feedback.classList.remove('hidden');
+                    try {
+                        localStorage.setItem('notariado_licensed', '1');
+                        localStorage.setItem('notariado_license_key', key);
+                        if (window.NotariadoAuth && typeof window.NotariadoAuth.setLicensed === 'function') {
+                            window.NotariadoAuth.setLicensed(true);
+                        }
+                    } catch (e) {
+                        console.log('Storage warning:', e);
+                    }
 
-                    if (window.NotariadoAuth) {
-                        window.NotariadoAuth.setLicensed(true);
+                    if (feedback) {
+                        feedback.className = 'p-4 rounded-xl text-xs font-semibold bg-emerald-100 text-emerald-900 border border-emerald-300';
+                        feedback.innerHTML = `<strong>¡Excelente!</strong> ${data.message} Redirigiendo al panel...`;
+                        feedback.classList.remove('hidden');
                     }
 
                     setTimeout(() => {

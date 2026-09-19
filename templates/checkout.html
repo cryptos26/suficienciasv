@@ -16,6 +16,40 @@
         </p>
     </div>
 
+    <!-- Exam Countdown Banner -->
+    <div class="mb-8 p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-navy-950 via-slate-900 to-navy-900 border border-gold-500/30 text-white shadow-lg flex flex-col md:flex-row items-center justify-between gap-4">
+        <div class="flex items-center gap-3 text-center md:text-left">
+            <div class="w-10 h-10 rounded-xl bg-gold-500/20 border border-gold-500/40 flex items-center justify-center shrink-0 text-gold-400">
+                <i data-lucide="clock" class="w-5 h-5"></i>
+            </div>
+            <div>
+                <div class="text-xs font-bold uppercase tracking-wider text-gold-400">Cuenta Regresiva al Examen Oficial CSJ</div>
+                <div class="text-sm sm:text-base font-extrabold text-white">Próxima Convocatoria: {{ exam_date_label }}</div>
+            </div>
+        </div>
+        <div class="flex items-center gap-2 sm:gap-3 text-center" id="checkout-countdown">
+            <div class="bg-navy-800/80 border border-white/10 rounded-xl px-3 py-1.5 min-w-[54px]">
+                <div class="text-lg sm:text-xl font-black text-gold-400 font-mono" id="cd-days">--</div>
+                <div class="text-[10px] uppercase font-bold text-slate-400">Días</div>
+            </div>
+            <div class="text-gold-400 font-bold">:</div>
+            <div class="bg-navy-800/80 border border-white/10 rounded-xl px-3 py-1.5 min-w-[54px]">
+                <div class="text-lg sm:text-xl font-black text-white font-mono" id="cd-hours">--</div>
+                <div class="text-[10px] uppercase font-bold text-slate-400">Horas</div>
+            </div>
+            <div class="text-gold-400 font-bold">:</div>
+            <div class="bg-navy-800/80 border border-white/10 rounded-xl px-3 py-1.5 min-w-[54px]">
+                <div class="text-lg sm:text-xl font-black text-white font-mono" id="cd-mins">--</div>
+                <div class="text-[10px] uppercase font-bold text-slate-400">Min</div>
+            </div>
+            <div class="text-gold-400 font-bold">:</div>
+            <div class="bg-navy-800/80 border border-white/10 rounded-xl px-3 py-1.5 min-w-[54px]">
+                <div class="text-lg sm:text-xl font-black text-gold-400 font-mono" id="cd-secs">--</div>
+                <div class="text-[10px] uppercase font-bold text-slate-400">Seg</div>
+            </div>
+        </div>
+    </div>
+
     <!-- Main Checkout Grid -->
     <div class="grid lg:grid-cols-3 gap-8" id="checkout-main-grid">
         <!-- Plan Selection (Col 1) -->
@@ -25,7 +59,7 @@
             <!-- Plan 30 Días -->
             <div class="plan-card p-4 rounded-2xl border-2 border-slate-200 hover:border-blue-500 bg-white cursor-pointer transition-all relative" data-plan="30_dias" data-price="19.99">
                 <div class="flex justify-between items-center mb-1">
-                    <span class="font-bold text-slate-900 text-sm">Plan 30 Días</span>
+                    <span class="font-bold text-slate-900 text-sm">Plan Mensual (30 Días)</span>
                     <span class="text-base font-extrabold text-blue-700">$19.99</span>
                 </div>
                 <p class="text-xs text-slate-500 leading-relaxed">
@@ -33,30 +67,20 @@
                 </p>
             </div>
 
-            <!-- Plan 90 Días -->
-            <div class="plan-card p-4 rounded-2xl border-2 border-slate-200 hover:border-blue-500 bg-white cursor-pointer transition-all relative" data-plan="90_dias" data-price="34.99">
-                <div class="flex justify-between items-center mb-1">
-                    <span class="font-bold text-slate-900 text-sm">Plan 90 Días</span>
-                    <span class="text-base font-extrabold text-blue-700">$34.99</span>
+            <!-- Plan Vitalicio / Premium (Popular a $34.99) -->
+            <div class="plan-card selected p-4 rounded-2xl border-2 border-gold-500 bg-amber-50/40 cursor-pointer transition-all relative shadow-sm" data-plan="vitalicia" data-price="34.99">
+                <div class="absolute -top-2.5 right-3 bg-gold-500 text-navy-950 px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider">
+                    Oferta Especial CSJ 2026
                 </div>
-                <p class="text-xs text-slate-500 leading-relaxed">
-                    3 meses de preparación integral con todas las materias y casos.
+                <div class="flex justify-between items-center mb-1">
+                    <span class="font-bold text-slate-900 text-sm">Acceso Premium Total</span>
+                    <span class="text-base font-extrabold text-amber-800">$34.99</span>
+                </div>
+                <p class="text-xs text-slate-600 leading-relaxed">
+                    Acceso permanente e ilimitado sin fecha de caducidad hasta aprobar el examen CSJ.
                 </p>
             </div>
 
-            <!-- Plan Vitalicio (Popular) -->
-            <div class="plan-card selected p-4 rounded-2xl border-2 border-gold-500 bg-amber-50/40 cursor-pointer transition-all relative shadow-sm" data-plan="vitalicia" data-price="49.99">
-                <div class="absolute -top-2.5 right-3 bg-gold-500 text-navy-950 px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider">
-                    Más Popular
-                </div>
-                <div class="flex justify-between items-center mb-1">
-                    <span class="font-bold text-slate-900 text-sm">Acceso Vitalicio</span>
-                    <span class="text-base font-extrabold text-amber-800">$49.99</span>
-                </div>
-                <p class="text-xs text-slate-600 leading-relaxed">
-                    Acceso permanente sin fecha de vencimiento hasta aprobar.
-                </p>
-            </div>
 
             <!-- Features list -->
             <div class="p-4 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-600 space-y-2">
@@ -395,7 +419,7 @@
                         class="w-full py-4 rounded-xl bg-blue-700 hover:bg-blue-600 text-white font-extrabold text-base shadow-lg shadow-blue-900/30 transition-all flex items-center justify-center gap-2"
                     >
                         <i data-lucide="check-circle" class="w-5 h-5 text-gold-500"></i>
-                        <span>Confirmar Pago de $<span id="pay-amount-display">49.99</span> y Activar</span>
+                        <span>Confirmar Pago de $<span id="pay-amount-display">34.99</span> y Activar</span>
                     </button>
                 </form>
             </div>
@@ -465,7 +489,7 @@
 
     document.addEventListener('DOMContentLoaded', () => {
         let currentPlan = 'vitalicia';
-        let currentPrice = '49.99';
+        let currentPrice = '34.99';
         let currentMethod = 'strike';
 
         const planCards = document.querySelectorAll('.plan-card');
@@ -644,6 +668,42 @@
                 payBtn.innerHTML = `<span>Reintentar Pago</span>`;
             }
         });
+
+        // Countdown Timer Logic
+        (function() {
+            const targetDateStr = "{{ exam_target_date }}";
+            const target = new Date(targetDateStr).getTime();
+            const daysEl = document.getElementById('cd-days');
+            const hoursEl = document.getElementById('cd-hours');
+            const minsEl = document.getElementById('cd-mins');
+            const secsEl = document.getElementById('cd-secs');
+
+            function updateTicker() {
+                const now = new Date().getTime();
+                const diff = target - now;
+                if (diff <= 0) {
+                    if (daysEl) daysEl.textContent = '0';
+                    if (hoursEl) hoursEl.textContent = '00';
+                    if (minsEl) minsEl.textContent = '00';
+                    if (secsEl) secsEl.textContent = '00';
+                    return;
+                }
+                const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+                const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                const mins = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+                const secs = Math.floor((diff % (1000 * 60)) / 1000);
+
+                const pad = (n) => String(n).padStart(2, '0');
+
+                if (daysEl) daysEl.textContent = days;
+                if (hoursEl) hoursEl.textContent = pad(hours);
+                if (minsEl) minsEl.textContent = pad(mins);
+                if (secsEl) secsEl.textContent = pad(secs);
+            }
+
+            updateTicker();
+            setInterval(updateTicker, 1000);
+        })();
     });
 </script>
 {% endblock %}
