@@ -14,6 +14,22 @@ app = Flask(
 app.secret_key = "notariado_sv_secret_key_2026_super_secure"
 ADMIN_PIN = "notario2026"
 
+class VercelPathMiddleware:
+    """WSGI middleware ensuring proper path resolution when running under Vercel Serverless."""
+    def __init__(self, wsgi_app):
+        self.wsgi_app = wsgi_app
+
+    def __call__(self, environ, start_response):
+        path = environ.get('PATH_INFO', '')
+        for prefix in ['/api/index.py', '/api/index']:
+            if path.startswith(prefix):
+                path = path[len(prefix):]
+                break
+        environ['PATH_INFO'] = path if (path and path.startswith('/')) else ('/' + path if path else '/')
+        return self.wsgi_app(environ, start_response)
+
+app.wsgi_app = VercelPathMiddleware(app.wsgi_app)
+
 # Ensure DB is initialized
 db.init_db()
 
@@ -28,6 +44,9 @@ def is_device_licensed(device_id):
     return lic is not None
 
 @app.route("/")
+@app.route("/api")
+@app.route("/api/index")
+@app.route("/api/index.py")
 def index():
     stats = db.get_dashboard_stats()
     categories = db.get_categories()
@@ -628,6 +647,12 @@ def admin_reset_device_route(license_id):
 def admin_logout():
     session.pop("admin_logged_in", None)
     return redirect(url_for("admin_panel"))
+
+@app.errorhandler(404)
+def handle_404(e):
+    if request.path.startswith('/api/'):
+        return jsonify({"error": "Endpoint not found", "path": request.path}), 404
+    return redirect(url_for("index"))
 
 if __name__ == "__main__":
     app.run(host="127.0.0.1", port=5000, debug=True)
