@@ -11,10 +11,10 @@
             <i data-lucide="lock" class="w-6 h-6"></i>
         </div>
         <h1 class="text-xl font-bold text-slate-900 mb-1">Acceso a Administración</h1>
-        <p class="text-xs text-slate-500 mb-6">Ingresa el PIN de seguridad del propietario para gestionar claves y ventas.</p>
+        <p class="text-base text-slate-600 mb-6">Ingresa el PIN de seguridad del propietario para gestionar claves y ventas.</p>
 
         {% if error %}
-        <div class="p-3 rounded-xl bg-rose-100 text-rose-800 text-xs font-semibold mb-4 border border-rose-200">
+        <div class="p-3 rounded-xl bg-rose-100 text-rose-800 text-sm font-semibold mb-4 border border-rose-200">
             {{ error }}
         </div>
         {% endif %}
@@ -29,7 +29,6 @@
                     required
                     autofocus
                 >
-                <div class="text-[10px] text-slate-400 mt-1">PIN por defecto: <strong class="font-mono">notario2026</strong></div>
             </div>
             <button type="submit" class="w-full py-3 rounded-xl bg-navy-900 hover:bg-navy-800 text-white font-bold text-sm shadow transition-colors">
                 Ingresar al Panel
@@ -51,7 +50,7 @@
                 </h1>
             </div>
             <div class="flex items-center gap-3">
-                <a href="{{ url_for('admin_logout') }}" class="px-4 py-2 rounded-xl border border-slate-300 hover:bg-slate-50 text-slate-700 text-xs font-semibold transition-colors">
+                <a href="{{ url_for('admin_logout') }}" class="px-4 py-2.5 rounded-xl border border-slate-300 hover:bg-slate-50 text-slate-800 text-sm sm:text-base font-bold transition-colors">
                     Cerrar Sesión Admin
                 </a>
             </div>
@@ -61,19 +60,19 @@
         <div class="bg-gradient-to-br from-amber-500/10 via-white to-amber-500/5 rounded-2xl border-2 border-amber-300 shadow-sm p-6 sm:p-8">
             <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
                 <div>
-                    <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-500 text-navy-950 text-xs font-black uppercase tracking-wider mb-2">
+                    <span class="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-amber-500 text-navy-950 text-xs sm:text-sm font-black uppercase tracking-wider mb-2">
                         <i data-lucide="sparkles" class="w-4 h-4"></i> 10 Claves Promocionales Vitalicias Generadas
                     </span>
-                    <h2 class="text-xl font-bold text-slate-900">
+                    <h2 class="text-xl sm:text-2xl font-bold text-slate-900">
                         Lote Exclusivo de Lanzamiento VIP
                     </h2>
-                    <p class="text-xs text-slate-600 mt-0.5">
+                    <p class="text-base text-slate-600 mt-1">
                         Estas 10 claves otorgan acceso ilimitado de por vida y quedan vinculadas al primer dispositivo que las active.
                     </p>
                 </div>
                 <button 
                     onclick="copyAllPromos()" 
-                    class="px-4 py-2 rounded-xl bg-amber-600 hover:bg-amber-500 text-white font-bold text-xs shadow transition-colors flex items-center gap-1.5"
+                    class="px-5 py-2.5 rounded-xl bg-amber-600 hover:bg-amber-500 text-white font-bold text-sm sm:text-base shadow transition-colors flex items-center gap-2"
                 >
                     <i data-lucide="copy" class="w-4 h-4"></i> Copiar las 10 Claves
                 </button>
@@ -82,25 +81,25 @@
             <!-- Grid of 10 promo keys -->
             <div class="grid sm:grid-cols-2 lg:grid-cols-5 gap-3" id="promo-keys-grid">
                 {% for promo in promotional_keys %}
-                <div class="p-3.5 rounded-xl border {% if promo.is_claimed %}border-blue-300 bg-blue-50/60{% else %}border-amber-300 bg-white shadow-sm{% endif %} flex flex-col justify-between">
+                <div class="p-4 rounded-xl border {% if promo.is_claimed %}border-blue-300 bg-blue-50/60{% else %}border-amber-300 bg-white shadow-sm{% endif %} flex flex-col justify-between">
                     <div>
-                        <div class="flex items-center justify-between text-[11px] font-bold mb-1">
-                            <span class="text-slate-500">#{{ loop.index }} VIP</span>
+                        <div class="flex items-center justify-between text-xs sm:text-sm font-bold mb-1.5">
+                            <span class="text-slate-600">#{{ loop.index }} VIP</span>
                             {% if promo.is_claimed %}
-                            <span class="text-blue-700 bg-blue-100 px-1.5 py-0.5 rounded text-[10px]">Activa</span>
+                            <span class="text-blue-800 bg-blue-100 px-2 py-0.5 rounded text-xs font-bold">Activa</span>
                             {% else %}
-                            <span class="text-emerald-700 bg-emerald-100 px-1.5 py-0.5 rounded text-[10px]">Disponible</span>
+                            <span class="text-emerald-800 bg-emerald-100 px-2 py-0.5 rounded text-xs font-bold">Disponible</span>
                             {% endif %}
                         </div>
-                        <div class="font-mono font-black text-sm text-slate-900 tracking-wider mb-2 select-all">
+                        <div class="font-mono font-black text-base sm:text-lg text-slate-900 tracking-wider mb-2 select-all">
                             {{ promo.license_key }}
                         </div>
                     </div>
                     <button 
                         onclick="copySingleKey('{{ promo.license_key }}')" 
-                        class="w-full py-1.5 rounded-lg border border-slate-200 hover:bg-slate-100 text-[11px] font-semibold text-slate-700 flex items-center justify-center gap-1 transition-colors"
+                        class="w-full py-2 rounded-lg border border-slate-200 hover:bg-slate-100 text-xs sm:text-sm font-bold text-slate-700 flex items-center justify-center gap-1.5 transition-colors"
                     >
-                        <i data-lucide="message-square" class="w-3 h-3 text-emerald-600"></i> Copiar Mensaje
+                        <i data-lucide="message-square" class="w-3.5 h-3.5 text-emerald-600"></i> Copiar Mensaje
                     </button>
                 </div>
                 {% endfor %}
@@ -109,146 +108,148 @@
 
         <!-- GENERATOR ACTIONS CARD -->
         <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
-            <h2 class="text-base font-bold text-slate-900 mb-4 flex items-center gap-2">
+            <h2 class="text-lg sm:text-xl font-bold text-slate-900 mb-4 flex items-center gap-2">
                 <i data-lucide="plus-circle" class="w-5 h-5 text-blue-600"></i>
                 <span>Generador Automático de Nuevas Claves</span>
             </h2>
             <div class="grid sm:grid-cols-3 gap-3">
                 <button onclick="generateKey('30_dias', 'Licencia Mensual 30 días')" class="p-4 rounded-xl border-2 border-slate-200 hover:border-blue-500 bg-slate-50 hover:bg-blue-50/40 text-left transition-all group">
-                    <div class="text-xs font-bold text-slate-400 group-hover:text-blue-600 uppercase mb-1">+ 1 Clave</div>
-                    <div class="font-bold text-slate-900 text-sm">Plan 30 Días ($19.99)</div>
-                    <div class="text-xs text-slate-500 mt-1">Vigencia: 30 días tras activación</div>
+                    <div class="text-xs sm:text-sm font-extrabold text-slate-500 group-hover:text-blue-600 uppercase mb-1">+ 1 Clave</div>
+                    <div class="font-bold text-slate-900 text-base">Plan 30 Días ($19.99)</div>
+                    <div class="text-sm text-slate-600 mt-1">Vigencia: 30 días tras activación</div>
                 </button>
 
-                <button onclick="generateKey('vitalicia', 'Licencia Premium Total')" class="p-4 rounded-xl border-2 border-slate-200 hover:border-amber-500 bg-slate-50 hover:bg-amber-50/40 text-left transition-all group">
-                    <div class="text-xs font-bold text-slate-400 group-hover:text-amber-600 uppercase mb-1">+ 1 Clave</div>
-                    <div class="font-bold text-slate-900 text-sm">Acceso Premium Total ($34.99)</div>
-                    <div class="text-xs text-slate-500 mt-1">Acceso permanente hasta aprobar CSJ</div>
+                <button onclick="generateKey('vitalicia', 'Licencia Premium Total')" class="p-4 rounded-xl border-2 border-amber-300 hover:border-amber-500 bg-amber-50/30 hover:bg-amber-50/60 text-left transition-all group">
+                    <div class="text-xs sm:text-sm font-extrabold text-amber-600 uppercase mb-1">+ 1 Clave</div>
+                    <div class="font-bold text-slate-900 text-base">Acceso Premium Total ($34.99)</div>
+                    <div class="text-sm text-slate-600 mt-1">Acceso permanente hasta aprobar CSJ</div>
                 </button>
 
                 <button onclick="generateBatch(10)" class="p-4 rounded-xl border-2 border-blue-200 bg-blue-50/70 hover:bg-blue-100/70 text-left transition-all">
-                    <div class="text-xs font-bold text-blue-600 uppercase mb-1">Generación Rápida</div>
-                    <div class="font-bold text-blue-950 text-sm">+ Lote de 10 Claves</div>
-                    <div class="text-xs text-blue-800 mt-1">10 Claves Premium en 1 clic</div>
+                    <div class="text-xs sm:text-sm font-extrabold text-blue-600 uppercase mb-1">Generación Rápida</div>
+                    <div class="font-bold text-blue-950 text-base">+ Lote de 10 Claves</div>
+                    <div class="text-sm text-blue-800 mt-1">10 Claves Premium en 1 clic</div>
                 </button>
             </div>
+        </div>
+
         <!-- AMBASSADORS & LIGHTNING COMMISSIONS SECTION (STRIKE / BLINK) -->
         <div class="bg-white rounded-2xl border-2 border-amber-300 shadow-sm p-6 sm:p-8 space-y-6">
             <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-4 border-b border-slate-100">
                 <div>
-                    <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-500 text-slate-950 text-xs font-black uppercase tracking-wider mb-2">
+                    <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-500 text-slate-950 text-xs sm:text-sm font-black uppercase tracking-wider mb-2">
                         <i data-lucide="zap" class="w-4 h-4"></i> Pagos vía Strike y Blink (Lightning)
                     </span>
                     <h2 class="text-xl font-bold text-slate-900">
                         Comisiones de Embajadores Notariales
                     </h2>
-                    <p class="text-xs text-slate-600 mt-0.5">
+                    <p class="text-base text-slate-600 mt-1">
                         Liquidación directa a billeteras Strike y Blink Wallet de abogados que refieren nuevos aspirantes.
                     </p>
                 </div>
                 <!-- Mini Stats -->
                 <div class="flex items-center gap-3">
-                    <div class="px-4 py-2 rounded-xl bg-amber-50 border border-amber-200 text-right">
-                        <div class="text-[10px] font-bold text-amber-900 uppercase">Pendiente por Pagar</div>
-                        <div class="text-lg font-black text-amber-600">${{ "%.2f"|format(pending_comm_total) }} USD</div>
+                    <div class="px-4 py-2.5 rounded-xl bg-amber-50 border border-amber-200 text-right">
+                        <div class="text-xs font-bold text-amber-900 uppercase tracking-wider">Pendiente por Pagar</div>
+                        <div class="text-xl sm:text-2xl font-black text-amber-600">${{ "%.2f"|format(pending_comm_total) }} USD</div>
                     </div>
-                    <div class="px-4 py-2 rounded-xl bg-emerald-50 border border-emerald-200 text-right">
-                        <div class="text-[10px] font-bold text-emerald-900 uppercase">Comisiones Pagadas</div>
-                        <div class="text-lg font-black text-emerald-700">${{ "%.2f"|format(paid_comm_total) }} USD</div>
+                    <div class="px-4 py-2.5 rounded-xl bg-emerald-50 border border-emerald-200 text-right">
+                        <div class="text-xs font-bold text-emerald-900 uppercase tracking-wider">Comisiones Pagadas</div>
+                        <div class="text-xl sm:text-2xl font-black text-emerald-700">${{ "%.2f"|format(paid_comm_total) }} USD</div>
                     </div>
                 </div>
             </div>
 
             <!-- Pending Commissions Ledger -->
             <div>
-                <h3 class="text-sm font-bold text-slate-800 mb-3 flex items-center gap-1.5">
-                    <i data-lucide="clock" class="w-4 h-4 text-amber-600"></i> Historial y Pagos Pendientes ({{ commissions|length }})
+                <h3 class="text-base sm:text-lg font-bold text-slate-800 mb-3 flex items-center gap-2">
+                    <i data-lucide="clock" class="w-5 h-5 text-amber-600"></i> Historial y Pagos Pendientes ({{ commissions|length }})
                 </h3>
-                <div class="overflow-x-auto rounded-xl border border-slate-200">
-                    <table class="w-full text-left text-xs">
-                        <thead class="bg-slate-50 border-b border-slate-200 text-slate-500 font-semibold uppercase tracking-wider">
+                <div class="overflow-x-auto rounded-xl border border-slate-200 shadow-sm">
+                    <table class="w-full text-left text-sm sm:text-base">
+                        <thead class="bg-slate-100 border-b border-slate-200 text-slate-700 font-extrabold uppercase tracking-wider text-xs sm:text-sm">
                             <tr>
-                                <th class="px-4 py-2.5">Embajador</th>
-                                <th class="px-4 py-2.5">Aspirante / Orden</th>
-                                <th class="px-4 py-2.5">Plan</th>
-                                <th class="px-4 py-2.5">Comisión</th>
-                                <th class="px-4 py-2.5">Billetera / Usuario</th>
-                                <th class="px-4 py-2.5">Estado</th>
-                                <th class="px-4 py-2.5 text-right">Liquidación Lightning</th>
+                                <th class="px-4 py-3.5">Embajador</th>
+                                <th class="px-4 py-3.5">Aspirante / Orden</th>
+                                <th class="px-4 py-3.5">Plan</th>
+                                <th class="px-4 py-3.5">Comisión</th>
+                                <th class="px-4 py-3.5">Billetera / Usuario</th>
+                                <th class="px-4 py-3.5">Estado</th>
+                                <th class="px-4 py-3.5 text-right">Liquidación Lightning</th>
                             </tr>
                         </thead>
-                        <tbody class="divide-y divide-slate-100">
+                        <tbody class="divide-y divide-slate-100 bg-white">
                             {% for comm in commissions %}
-                            <tr class="hover:bg-slate-50/80 transition-colors">
-                                <td class="px-4 py-3 font-semibold text-slate-900">
-                                    {{ comm.ambassador_name }}
-                                    <div class="font-mono text-[10px] text-indigo-700 font-bold">{{ comm.ambassador_code }}</div>
+                            <tr class="hover:bg-slate-50/90 transition-colors">
+                                <td class="px-4 py-3.5">
+                                    <div class="font-bold text-slate-900 text-sm sm:text-base">{{ comm.ambassador_name }}</div>
+                                    <div class="font-mono text-xs sm:text-sm text-indigo-700 font-extrabold">{{ comm.ambassador_code }}</div>
                                 </td>
-                                <td class="px-4 py-3">
-                                    <div class="font-bold text-slate-800">{{ comm.buyer_name }}</div>
-                                    <div class="font-mono text-[10px] text-slate-400">{{ comm.order_id }}</div>
+                                <td class="px-4 py-3.5">
+                                    <div class="font-bold text-slate-800 text-sm sm:text-base">{{ comm.buyer_name }}</div>
+                                    <div class="font-mono text-xs sm:text-sm text-slate-500">{{ comm.order_id }}</div>
                                 </td>
-                                <td class="px-4 py-3 uppercase font-semibold text-slate-600">{{ comm.plan_type }}</td>
-                                <td class="px-4 py-3 font-black text-amber-600 text-sm">
+                                <td class="px-4 py-3.5 uppercase font-bold text-slate-700 text-sm sm:text-base">{{ comm.plan_type }}</td>
+                                <td class="px-4 py-3.5 font-black text-amber-600 text-base sm:text-lg">
                                     ${{ "%.2f"|format(comm.amount_usd) }} USD
                                 </td>
-                                <td class="px-4 py-3 font-mono font-bold text-slate-800">
+                                <td class="px-4 py-3.5 font-mono font-bold text-slate-800">
                                     {% if comm.wallet_type == 'blink' %}
-                                    <span class="px-2 py-0.5 rounded bg-yellow-100 text-yellow-900 border border-yellow-300 inline-flex items-center gap-1 text-[11px]">
+                                    <span class="px-3 py-1 rounded-lg bg-yellow-100 text-yellow-950 border border-yellow-400 inline-flex items-center gap-1.5 text-xs sm:text-sm font-bold">
                                         🟡 Blink: @{{ comm.strike_handle }}
                                     </span>
                                     {% else %}
-                                    <span class="px-2 py-0.5 rounded bg-amber-100 text-amber-900 border border-amber-300 inline-flex items-center gap-1 text-[11px]">
+                                    <span class="px-3 py-1 rounded-lg bg-amber-100 text-amber-950 border border-amber-400 inline-flex items-center gap-1.5 text-xs sm:text-sm font-bold">
                                         ⚡ Strike: @{{ comm.strike_handle }}
                                     </span>
                                     {% endif %}
                                 </td>
-                                <td class="px-4 py-3">
+                                <td class="px-4 py-3.5">
                                     {% if comm.status == 'PENDIENTE' %}
-                                    <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800">
+                                    <span class="px-3 py-1 rounded-full text-xs sm:text-sm font-extrabold bg-amber-100 text-amber-900 border border-amber-300">
                                         Pendiente
                                     </span>
                                     {% else %}
-                                    <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800">
+                                    <span class="px-3 py-1 rounded-full text-xs sm:text-sm font-extrabold bg-emerald-100 text-emerald-900 border border-emerald-300">
                                         Pagado {{ comm.paid_at[:10] if comm.paid_at else '' }}
                                     </span>
                                     {% endif %}
                                 </td>
-                                <td class="px-4 py-3 text-right space-x-1">
+                                <td class="px-4 py-3.5 text-right space-x-1.5">
                                     {% if comm.status == 'PENDIENTE' %}
                                     {% if comm.wallet_type == 'blink' %}
                                     <a 
                                         href="https://pay.blink.sv/{{ comm.strike_handle }}" 
                                         target="_blank" 
-                                        class="px-2.5 py-1 rounded-lg bg-yellow-400 hover:bg-yellow-300 text-slate-950 font-bold text-[11px] shadow-sm transition-colors inline-flex items-center gap-1"
+                                        class="px-3.5 py-2 rounded-xl bg-yellow-400 hover:bg-yellow-300 text-slate-950 font-extrabold text-xs sm:text-sm shadow-sm transition-colors inline-flex items-center gap-1.5"
                                         title="Abrir Blink Wallet (pay.blink.sv) para transferir"
                                     >
-                                        <i data-lucide="external-link" class="w-3.5 h-3.5"></i> Pagar en Blink
+                                        <i data-lucide="external-link" class="w-4 h-4"></i> Pagar en Blink
                                     </a>
                                     {% else %}
                                     <a 
                                         href="https://strike.me/{{ comm.strike_handle }}" 
                                         target="_blank" 
-                                        class="px-2.5 py-1 rounded-lg bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-[11px] shadow-sm transition-colors inline-flex items-center gap-1"
+                                        class="px-3.5 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-extrabold text-xs sm:text-sm shadow-sm transition-colors inline-flex items-center gap-1.5"
                                         title="Abrir Strike para transferir"
                                     >
-                                        <i data-lucide="zap" class="w-3.5 h-3.5"></i> Pagar en Strike
+                                        <i data-lucide="zap" class="w-4 h-4"></i> Pagar en Strike
                                     </a>
                                     {% endif %}
                                     <button 
                                         onclick="markCommissionPaid('{{ comm.comm_id or comm.id }}', '{{ comm.wallet_type or 'strike' }}')" 
-                                        class="px-2.5 py-1 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 font-bold text-[11px] transition-colors"
+                                        class="px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold text-xs sm:text-sm shadow-sm transition-colors inline-flex items-center gap-1.5"
                                     >
                                         Marcar Pagado
                                     </button>
                                     {% else %}
-                                    <span class="text-xs text-slate-400 italic">Liquidado ({{ comm.payout_reference or 'OK' }})</span>
+                                    <span class="text-xs sm:text-sm text-slate-500 font-semibold italic">Liquidado ({{ comm.payout_reference or 'OK' }})</span>
                                     {% endif %}
                                 </td>
                             </tr>
                             {% else %}
                             <tr>
-                                <td colspan="7" class="px-4 py-6 text-center text-slate-400 italic">
+                                <td colspan="7" class="px-4 py-8 text-center text-slate-500 text-sm sm:text-base italic">
                                     No hay comisiones registradas aún. Las comisiones aparecerán automáticamente cuando un aspirante use un código de embajador.
                                 </td>
                             </tr>
@@ -262,32 +263,32 @@
             <div class="pt-4 border-t border-slate-100 grid md:grid-cols-3 gap-6">
                 <!-- Ambassadors Table -->
                 <div class="md:col-span-2 space-y-2">
-                    <h4 class="text-xs font-bold uppercase tracking-wider text-slate-500">Embajadores Registrados ({{ ambassadors|length }})</h4>
-                    <div class="overflow-x-auto rounded-xl border border-slate-200">
-                        <table class="w-full text-left text-xs">
-                            <thead class="bg-slate-50 border-b border-slate-200 text-slate-500 uppercase tracking-wider">
+                    <h4 class="text-sm sm:text-base font-extrabold uppercase tracking-wider text-slate-700">Embajadores Registrados ({{ ambassadors|length }})</h4>
+                    <div class="overflow-x-auto rounded-xl border border-slate-200 shadow-sm">
+                        <table class="w-full text-left text-sm sm:text-base">
+                            <thead class="bg-slate-100 border-b border-slate-200 text-slate-700 uppercase tracking-wider text-xs sm:text-sm font-bold">
                                 <tr>
-                                    <th class="px-3 py-2">Código</th>
-                                    <th class="px-3 py-2">Nombre</th>
-                                    <th class="px-3 py-2">Billetera</th>
-                                    <th class="px-3 py-2">Ganado</th>
-                                    <th class="px-3 py-2">Pagado</th>
+                                    <th class="px-3.5 py-2.5">Código</th>
+                                    <th class="px-3.5 py-2.5">Nombre</th>
+                                    <th class="px-3.5 py-2.5">Billetera</th>
+                                    <th class="px-3.5 py-2.5">Ganado</th>
+                                    <th class="px-3.5 py-2.5">Pagado</th>
                                 </tr>
                             </thead>
-                            <tbody class="divide-y divide-slate-100 font-sans">
+                            <tbody class="divide-y divide-slate-100 font-sans bg-white">
                                 {% for a in ambassadors %}
                                 <tr class="hover:bg-slate-50/70">
-                                    <td class="px-3 py-2 font-mono font-bold text-indigo-700">{{ a.code }}</td>
-                                    <td class="px-3 py-2 font-semibold text-slate-800">{{ a.name }}</td>
-                                    <td class="px-3 py-2 font-mono text-slate-600">
+                                    <td class="px-3.5 py-3 font-mono font-bold text-indigo-700 text-sm sm:text-base">{{ a.code }}</td>
+                                    <td class="px-3.5 py-3 font-semibold text-slate-800 text-sm sm:text-base">{{ a.name }}</td>
+                                    <td class="px-3.5 py-3 font-mono text-slate-700 text-xs sm:text-sm">
                                         {% if a.wallet_type == 'blink' %}
-                                        <span class="text-yellow-700 font-bold">🟡 Blink:</span> @{{ a.strike_handle }}
+                                        <span class="text-yellow-800 font-bold">🟡 Blink:</span> @{{ a.strike_handle }}
                                         {% else %}
-                                        <span class="text-amber-700 font-bold">⚡ Strike:</span> @{{ a.strike_handle }}
+                                        <span class="text-amber-800 font-bold">⚡ Strike:</span> @{{ a.strike_handle }}
                                         {% endif %}
                                     </td>
-                                    <td class="px-3 py-2 font-bold text-amber-600">${{ "%.2f"|format(a.total_earned or 0.0) }}</td>
-                                    <td class="px-3 py-2 font-bold text-emerald-700">${{ "%.2f"|format(a.total_paid or 0.0) }}</td>
+                                    <td class="px-3.5 py-3 font-bold text-amber-600 text-sm sm:text-base">${{ "%.2f"|format(a.total_earned or 0.0) }}</td>
+                                    <td class="px-3.5 py-3 font-bold text-emerald-700 text-sm sm:text-base">${{ "%.2f"|format(a.total_paid or 0.0) }}</td>
                                 </tr>
                                 {% endfor %}
                             </tbody>
@@ -296,19 +297,19 @@
                 </div>
 
                 <!-- Add Ambassador Form -->
-                <div class="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-3">
-                    <h4 class="text-xs font-bold uppercase tracking-wider text-slate-800 flex items-center gap-1.5">
-                        <i data-lucide="user-plus" class="w-4 h-4 text-indigo-600"></i> Registrar Nuevo Embajador
+                <div class="p-5 rounded-2xl bg-slate-50 border border-slate-200 space-y-3 shadow-sm">
+                    <h4 class="text-sm sm:text-base font-bold uppercase tracking-wider text-slate-800 flex items-center gap-2">
+                        <i data-lucide="user-plus" class="w-5 h-5 text-indigo-600"></i> Registrar Nuevo Embajador
                     </h4>
-                    <div class="space-y-2 text-xs">
-                        <input type="text" id="new-amb-code" placeholder="Código (ej. LIC-MARTINEZ)" class="w-full px-3 py-1.5 rounded-lg border border-slate-300 font-mono font-bold uppercase">
-                        <input type="text" id="new-amb-name" placeholder="Nombre completo" class="w-full px-3 py-1.5 rounded-lg border border-slate-300">
-                        <select id="new-amb-wallet" class="w-full px-3 py-1.5 rounded-lg border border-slate-300 font-semibold bg-white text-slate-700">
+                    <div class="space-y-3">
+                        <input type="text" id="new-amb-code" placeholder="Código (ej. LIC-MARTINEZ)" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 font-mono font-bold uppercase text-sm sm:text-base">
+                        <input type="text" id="new-amb-name" placeholder="Nombre completo" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm sm:text-base">
+                        <select id="new-amb-wallet" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 font-semibold bg-white text-slate-700 text-sm sm:text-base">
                             <option value="strike">⚡ Strike (@strike.me)</option>
                             <option value="blink">🟡 Blink Wallet (@blink.sv)</option>
                         </select>
-                        <input type="text" id="new-amb-strike" placeholder="Usuario de billetera (sin @)" class="w-full px-3 py-1.5 rounded-lg border border-slate-300 font-mono">
-                        <button onclick="createAmbassadorQuick()" class="w-full py-2 rounded-lg bg-navy-900 hover:bg-navy-800 text-white font-bold transition-colors">
+                        <input type="text" id="new-amb-strike" placeholder="Usuario de billetera (sin @)" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 font-mono text-sm sm:text-base">
+                        <button onclick="createAmbassadorQuick()" class="w-full py-3 rounded-xl bg-navy-900 hover:bg-navy-800 text-white font-bold text-sm sm:text-base transition-colors shadow">
                             Guardar Embajador
                         </button>
                     </div>
@@ -319,60 +320,60 @@
         <!-- ALL LICENSES TABLE -->
         <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
             <div class="p-5 border-b border-slate-100 flex items-center justify-between">
-                <h2 class="text-base font-bold text-slate-900 flex items-center gap-2">
+                <h2 class="text-base sm:text-lg font-bold text-slate-900 flex items-center gap-2">
                     <i data-lucide="database" class="w-5 h-5 text-blue-600"></i>
                     <span>Inventario Total de Licencias ({{ licenses|length }})</span>
                 </h2>
             </div>
             <div class="overflow-x-auto">
-                <table class="w-full text-left text-xs">
-                    <thead class="bg-slate-50 border-b border-slate-200 text-slate-500 font-semibold uppercase tracking-wider">
+                <table class="w-full text-left text-sm sm:text-base">
+                    <thead class="bg-slate-100 border-b border-slate-200 text-slate-700 font-extrabold uppercase tracking-wider text-xs sm:text-sm">
                         <tr>
-                            <th class="px-5 py-3">Clave de Acceso</th>
-                            <th class="px-5 py-3">Plan</th>
-                            <th class="px-5 py-3">Estado</th>
-                            <th class="px-5 py-3">Dispositivo Vinculado</th>
-                            <th class="px-5 py-3">Fecha Emisión</th>
-                            <th class="px-5 py-3">Fecha Activación</th>
-                            <th class="px-5 py-3 text-right">Acción Soporte</th>
+                            <th class="px-5 py-3.5">Clave de Acceso</th>
+                            <th class="px-5 py-3.5">Plan</th>
+                            <th class="px-5 py-3.5">Estado</th>
+                            <th class="px-5 py-3.5">Dispositivo Vinculado</th>
+                            <th class="px-5 py-3.5">Fecha Emisión</th>
+                            <th class="px-5 py-3.5">Fecha Activación</th>
+                            <th class="px-5 py-3.5 text-right">Acción Soporte</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-slate-100" id="licenses-table-body">
                         {% for lic in licenses %}
                         <tr class="hover:bg-slate-50/70 transition-colors">
-                            <td class="px-5 py-3 font-mono font-bold text-slate-900 text-sm">
+                            <td class="px-5 py-3.5 font-mono font-black text-slate-900 text-sm sm:text-base">
                                 {{ lic.license_key }}
                             </td>
-                            <td class="px-5 py-3 font-semibold uppercase text-slate-700">
+                            <td class="px-5 py-3.5 font-bold uppercase text-slate-700 text-sm sm:text-base">
                                 {{ lic.plan_type }}
                             </td>
-                            <td class="px-5 py-3">
+                            <td class="px-5 py-3.5">
                                 {% if lic.is_claimed %}
-                                <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-blue-100 text-blue-800">
+                                <span class="px-3 py-1 rounded-full text-xs sm:text-sm font-bold bg-blue-100 text-blue-800">
                                     Vinculada a Dispositivo
                                 </span>
                                 {% else %}
-                                <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800">
+                                <span class="px-3 py-1 rounded-full text-xs sm:text-sm font-bold bg-emerald-100 text-emerald-800">
                                     Disponible / Sin Usar
                                 </span>
                                 {% endif %}
                             </td>
-                            <td class="px-5 py-3 font-mono text-slate-500">
+                            <td class="px-5 py-3.5 font-mono text-slate-500 text-xs sm:text-sm">
                                 {% if lic.device_id %}
                                 <span class="truncate max-w-[150px] inline-block" title="{{ lic.device_id }}">{{ lic.device_id[:16] }}...</span>
                                 {% else %}
                                 <span class="text-slate-300">—</span>
                                 {% endif %}
                             </td>
-                            <td class="px-5 py-3 text-slate-500">{{ lic.created_at[:10] }}</td>
-                            <td class="px-5 py-3 text-slate-500">{{ lic.claimed_at or '—' }}</td>
-                            <td class="px-5 py-3 text-right space-x-1">
+                            <td class="px-5 py-3.5 text-slate-600 text-xs sm:text-sm">{{ lic.created_at[:10] }}</td>
+                            <td class="px-5 py-3.5 text-slate-600 text-xs sm:text-sm">{{ lic.claimed_at or '—' }}</td>
+                            <td class="px-5 py-3.5 text-right space-x-1.5">
                                 {% if lic.is_claimed %}
-                                <button onclick="resetDevice({{ lic.id }})" class="px-2.5 py-1 rounded bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-200 font-semibold text-[11px] transition-colors" title="Libera la clave si el estudiante cambió de computadora">
-                                    Liberar Dispositivo
+                                <button onclick="resetDevice('{{ lic.id or lic.license_key }}')" class="px-3 py-1.5 rounded-lg bg-amber-100 hover:bg-amber-200 text-amber-950 border border-amber-300 font-bold text-xs sm:text-sm transition-colors" title="Libera la clave si el estudiante cambió de computadora">
+                                     Liberar Dispositivo
                                 </button>
                                 {% endif %}
-                                <button onclick="copySingleKey('{{ lic.license_key }}')" class="px-2 py-1 rounded bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-[11px] transition-colors">
+                                <button onclick="copySingleKey('{{ lic.license_key }}')" class="px-3 py-1.5 rounded-lg bg-slate-200 hover:bg-slate-300 text-slate-800 font-bold text-xs sm:text-sm transition-colors">
                                     Copiar
                                 </button>
                             </td>
@@ -390,7 +391,7 @@
 {% block scripts %}
 <script>
     function copySingleKey(key) {
-        const message = `¡Hola Licenciado(a)! Gracias por tu pago.\nTu clave de acceso premium al Simulador de Notariado CSJ es:\n\n*${key}*\n\nIngresa y actívala en tu computadora aquí:\nhttp://127.0.0.1:5000/activar\n\n(Recuerda que por seguridad queda vinculada a un solo dispositivo). ¡Muchos éxitos en tu estudio!`;
+        const message = `¡Hola Licenciado(a)! Gracias por tu pago.\nTu clave de acceso premium al Simulador de Notariado CSJ es:\n\n*${key}*\n\nIngresa y actívala en tu computadora aquí:\nhttps://suficienciasv.vercel.app/activar\n\n(Recuerda que por seguridad queda vinculada a un solo dispositivo). ¡Muchos éxitos en tu estudio!`;
         navigator.clipboard.writeText(message).then(() => {
             alert('¡Mensaje con clave copiado al portapapeles!\nListo para pegar en WhatsApp.');
         });

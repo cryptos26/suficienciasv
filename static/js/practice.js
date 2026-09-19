@@ -109,32 +109,20 @@ document.addEventListener('DOMContentLoaded', () => {
 
         opts.forEach(opt => {
             const card = document.createElement('div');
-            card.className = 'option-card border-2 border-slate-200 rounded-xl p-4 cursor-pointer flex items-start gap-4 transition-all';
+            card.className = 'option-card border-2 border-slate-200 hover:border-blue-400 hover:bg-blue-50/40 rounded-xl p-2.5 sm:p-3 cursor-pointer flex items-center gap-3 transition-all';
             card.dataset.option = opt.key;
             card.innerHTML = `
-                <div class="w-7 h-7 rounded-full border-2 border-slate-300 flex items-center justify-center font-bold text-xs text-slate-600 shrink-0 mt-0.5 opt-indicator">
+                <div class="w-7 h-7 sm:w-8 sm:h-8 rounded-full border-2 border-slate-300 flex items-center justify-center font-extrabold text-xs sm:text-sm text-slate-700 shrink-0 opt-indicator">
                     ${opt.key}
                 </div>
-                <div class="text-sm sm:text-base text-slate-800 leading-normal flex-grow">
+                <div class="text-sm sm:text-base text-slate-800 leading-snug flex-grow font-medium">
                     ${opt.text}
                 </div>
             `;
 
             card.addEventListener('click', () => {
                 if (isChecked) return; // Cannot change after checking
-                selectedOption = opt.key;
-                pOptionsContainer.querySelectorAll('.option-card').forEach(c => {
-                    const indicator = c.querySelector('.opt-indicator');
-                    if (c.dataset.option === selectedOption) {
-                        c.classList.add('selected', 'border-blue-600', 'bg-blue-50/60');
-                        indicator.classList.remove('border-slate-300', 'text-slate-600');
-                        indicator.classList.add('border-blue-600', 'bg-blue-600', 'text-white');
-                    } else {
-                        c.classList.remove('selected', 'border-blue-600', 'bg-blue-50/60');
-                        indicator.classList.remove('border-blue-600', 'bg-blue-600', 'text-white');
-                        indicator.classList.add('border-slate-300', 'text-slate-600');
-                    }
-                });
+                selectPracticeOption(opt.key);
             });
 
             pOptionsContainer.appendChild(card);
@@ -142,6 +130,49 @@ document.addEventListener('DOMContentLoaded', () => {
 
         lucide.createIcons();
     }
+
+    function selectPracticeOption(optKey) {
+        if (isChecked) return;
+        selectedOption = optKey;
+        pOptionsContainer.querySelectorAll('.option-card').forEach(c => {
+            const indicator = c.querySelector('.opt-indicator');
+            if (c.dataset.option === selectedOption) {
+                c.classList.add('selected', 'border-blue-600', 'bg-blue-50/80', 'ring-2', 'ring-blue-500/20');
+                indicator.classList.remove('border-slate-300', 'text-slate-700');
+                indicator.classList.add('border-blue-600', 'bg-blue-600', 'text-white');
+            } else {
+                c.classList.remove('selected', 'border-blue-600', 'bg-blue-50/80', 'ring-2', 'ring-blue-500/20');
+                indicator.classList.remove('border-blue-600', 'bg-blue-600', 'text-white');
+                indicator.classList.add('border-slate-300', 'text-slate-700');
+            }
+        });
+    }
+
+    // Keyboard Shortcuts for Practice Mode
+    document.addEventListener('keydown', (e) => {
+        if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+        const key = e.key.toUpperCase();
+        if (['A', '1'].includes(key)) {
+            e.preventDefault();
+            selectPracticeOption('A');
+        } else if (['B', '2'].includes(key)) {
+            e.preventDefault();
+            selectPracticeOption('B');
+        } else if (['C', '3'].includes(key)) {
+            e.preventDefault();
+            selectPracticeOption('C');
+        } else if (['D', '4'].includes(key)) {
+            e.preventDefault();
+            selectPracticeOption('D');
+        } else if (e.key === 'Enter') {
+            e.preventDefault();
+            if (!isChecked && selectedOption) {
+                pCheckBtn.click();
+            } else if (isChecked) {
+                pNextBtn.click();
+            }
+        }
+    });
 
     pCheckBtn.addEventListener('click', () => {
         if (!selectedOption) {

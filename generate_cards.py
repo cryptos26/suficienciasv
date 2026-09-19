@@ -185,7 +185,7 @@ def create_promotional_card(index, key_code, plan_notes):
     draw.line([(100, div_y), (WIDTH - 100, div_y)], fill=COLOR_GOLD_DARK, width=1)
 
     # 7. Activation Instructions in Footer
-    instr_text = "ACTÍVALA HOY MISMO INGRESANDO A:  http://127.0.0.1:5000/activar"
+    instr_text = "ACTÍVALA HOY MISMO INGRESANDO A:  https://suficienciasv.vercel.app/activar"
     instr_w = draw.textlength(instr_text, font=font_footer)
     draw.text(((WIDTH - instr_w) / 2, 545), instr_text, fill=COLOR_GOLD_LIGHT, font=font_footer)
 

@@ -362,8 +362,8 @@ def api_referral_validate():
         return jsonify({"valid": False, "error": "El código colegiado no existe o no está activo."}), 404
 
     discount = 5.0 if plan in ["vitalicia", "90_dias"] else 3.0
-    prices = {"30_dias": 19.99, "90_dias": 34.99, "vitalicia": 49.99}
-    base_price = prices.get(plan, 49.99)
+    prices = {"30_dias": 19.99, "90_dias": 34.99, "vitalicia": 34.99}
+    base_price = prices.get(plan, 34.99)
     discounted = max(0.0, round(base_price - discount, 2))
 
     return jsonify({
@@ -410,7 +410,7 @@ def api_ambassadors_register():
         strike_handle=strike_handle,
         email=email,
         discount_usd=5.0,
-        commission_vitalicia=10.0,
+        commission_vitalicia=5.0,
         commission_trimestral=5.0,
         commission_mensual=3.0,
         wallet_type=wallet_type
@@ -441,7 +441,7 @@ def api_checkout_process():
     prices = {
         "30_dias": 19.99,
         "90_dias": 34.99,
-        "vitalicia": 49.99
+        "vitalicia": 34.99
     }
     durations = {
         "30_dias": 30,
@@ -449,7 +449,7 @@ def api_checkout_process():
         "vitalicia": -1
     }
 
-    amount = prices.get(plan_type, 49.99)
+    amount = prices.get(plan_type, 34.99)
     duration = durations.get(plan_type, -1)
 
     # Check for Ambassador Referral Code & apply discount
@@ -605,7 +605,7 @@ def admin_create_ambassador():
     email = data.get("email", "").strip()
     wallet_type = data.get("wallet_type", "strike").strip().lower()
     discount_usd = float(data.get("discount_usd", 5.0))
-    comm_vitalicia = float(data.get("commission_vitalicia", 10.0))
+    comm_vitalicia = float(data.get("commission_vitalicia", 5.0))
 
     if "blink" in wallet_type or "blink.sv" in strike_handle.lower():
         wallet_type = "blink"
@@ -650,7 +650,7 @@ def admin_generar_licencia():
 
     return jsonify({"success": True, "licenses": generated})
 
-@app.route("/admin/reset-device/<int:license_id>", methods=["POST"])
+@app.route("/admin/reset-device/<license_id>", methods=["POST"])
 def admin_reset_device_route(license_id):
     if not session.get("admin_logged_in"):
         return jsonify({"success": False, "error": "No autorizado"}), 403

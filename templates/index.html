@@ -17,7 +17,7 @@
                 <h3 class="text-base sm:text-lg font-black text-white tracking-tight">
                     Cuenta Regresiva al Examen Oficial de la CSJ
                 </h3>
-                <p class="text-xs text-slate-300">
+                <p class="text-sm sm:text-base text-slate-300">
                     Fecha oficial estimada: <strong class="text-gold-300">{{ exam_date_label }}</strong> • ¡El tiempo avanza, intensifica tu estudio diario!
                 </p>
             </div>
@@ -130,17 +130,17 @@
                     <div class="w-10 h-10 rounded-lg bg-blue-100 text-blue-800 flex items-center justify-center mb-4">
                         <i data-lucide="timer" class="w-5 h-5"></i>
                     </div>
-                    <h3 class="text-lg font-bold text-slate-900 mb-2">Simulador Oficial CSJ</h3>
-                    <p class="text-sm text-slate-600 mb-4 leading-relaxed">
+                    <h3 class="text-xl font-bold text-slate-900 mb-2">Simulador Oficial CSJ</h3>
+                    <p class="text-base text-slate-600 mb-4 leading-relaxed">
                         20 preguntas seleccionadas al azar bajo el estándar de la CSJ. Cuenta regresiva de 25 minutos, opción de marcar dudas y evaluación integral con dictamen final al concluir.
                     </p>
-                    <ul class="text-xs text-slate-500 space-y-1.5 mb-6">
-                        <li class="flex items-center gap-1.5"><i data-lucide="check" class="w-3.5 h-3.5 text-emerald-600"></i> Tiempo y presión de examen real</li>
-                        <li class="flex items-center gap-1.5"><i data-lucide="check" class="w-3.5 h-3.5 text-emerald-600"></i> Sin respuestas a la vista durante la prueba</li>
-                        <li class="flex items-center gap-1.5"><i data-lucide="check" class="w-3.5 h-3.5 text-emerald-600"></i> Justificación de cada opción al entregar</li>
+                    <ul class="text-sm sm:text-base text-slate-600 space-y-2 mb-6">
+                        <li class="flex items-center gap-2"><i data-lucide="check" class="w-4 h-4 text-emerald-600"></i> Tiempo y presión de examen real</li>
+                        <li class="flex items-center gap-2"><i data-lucide="check" class="w-4 h-4 text-emerald-600"></i> Sin respuestas a la vista durante la prueba</li>
+                        <li class="flex items-center gap-2"><i data-lucide="check" class="w-4 h-4 text-emerald-600"></i> Justificación de cada opción al entregar</li>
                     </ul>
                 </div>
-                <a href="{{ url_for('simulador') }}" class="w-full py-2.5 rounded-lg bg-blue-700 hover:bg-blue-600 text-white font-medium text-sm text-center transition-colors">
+                <a href="{{ url_for('simulador') }}" class="w-full py-3 rounded-xl bg-blue-700 hover:bg-blue-600 text-white font-bold text-base text-center transition-colors">
                     Comenzar Simulacro
                 </a>
             </div>
@@ -151,17 +151,17 @@
                     <div class="w-10 h-10 rounded-lg bg-emerald-100 text-emerald-800 flex items-center justify-center mb-4">
                         <i data-lucide="book-marked" class="w-5 h-5"></i>
                     </div>
-                    <h3 class="text-lg font-bold text-slate-900 mb-2">Práctica por Materias</h3>
-                    <p class="text-sm text-slate-600 mb-4 leading-relaxed">
+                    <h3 class="text-xl font-bold text-slate-900 mb-2">Práctica por Materias</h3>
+                    <p class="text-base text-slate-600 mb-4 leading-relaxed">
                         Estudia caso por caso a tu propio ritmo. Elige la rama del derecho que deseas reforzar y recibe retroalimentación inmediata con el artículo exacto y el análisis del caso.
                     </p>
-                    <ul class="text-xs text-slate-500 space-y-1.5 mb-6">
-                        <li class="flex items-center gap-1.5"><i data-lucide="check" class="w-3.5 h-3.5 text-emerald-600"></i> Filtro por ley y categoría específica</li>
-                        <li class="flex items-center gap-1.5"><i data-lucide="check" class="w-3.5 h-3.5 text-emerald-600"></i> Justificación jurídica inmediata</li>
-                        <li class="flex items-center gap-1.5"><i data-lucide="check" class="w-3.5 h-3.5 text-emerald-600"></i> Análisis de distractores y trampas</li>
+                    <ul class="text-sm sm:text-base text-slate-600 space-y-2 mb-6">
+                        <li class="flex items-center gap-2"><i data-lucide="check" class="w-4 h-4 text-emerald-600"></i> Filtro por ley y categoría específica</li>
+                        <li class="flex items-center gap-2"><i data-lucide="check" class="w-4 h-4 text-emerald-600"></i> Justificación jurídica inmediata</li>
+                        <li class="flex items-center gap-2"><i data-lucide="check" class="w-4 h-4 text-emerald-600"></i> Análisis de distractores y trampas</li>
                     </ul>
                 </div>
-                <a href="{{ url_for('practica') }}" class="w-full py-2.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-white font-medium text-sm text-center transition-colors">
+                <a href="{{ url_for('practica') }}" class="w-full py-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-bold text-base text-center transition-colors">
                     Explorar Preguntas
                 </a>
             </div>
@@ -172,17 +172,17 @@
                     <div class="w-10 h-10 rounded-lg bg-amber-100 text-amber-800 flex items-center justify-center mb-4">
                         <i data-lucide="sparkles" class="w-5 h-5"></i>
                     </div>
-                    <h3 class="text-lg font-bold text-slate-900 mb-2">Fichas de Plazos y Reglas</h3>
-                    <p class="text-sm text-slate-600 mb-4 leading-relaxed">
+                    <h3 class="text-xl font-bold text-slate-900 mb-2">Fichas de Plazos y Reglas</h3>
+                    <p class="text-base text-slate-600 mb-4 leading-relaxed">
                         Tarjetas interactivas 3D diseñadas para memorizar de manera rápida los plazos fatales, número de testigos instrumentales obligatorios y causales de inhabilitación.
                     </p>
-                    <ul class="text-xs text-slate-500 space-y-1.5 mb-6">
-                        <li class="flex items-center gap-1.5"><i data-lucide="check" class="w-3.5 h-3.5 text-emerald-600"></i> Plazos perentorios clave (LN y LENJVOD)</li>
-                        <li class="flex items-center gap-1.5"><i data-lucide="check" class="w-3.5 h-3.5 text-emerald-600"></i> Requisitos solemnes de escrituras y actas</li>
-                        <li class="flex items-center gap-1.5"><i data-lucide="check" class="w-3.5 h-3.5 text-emerald-600"></i> Repaso activo con vuelta de tarjeta</li>
+                    <ul class="text-sm sm:text-base text-slate-600 space-y-2 mb-6">
+                        <li class="flex items-center gap-2"><i data-lucide="check" class="w-4 h-4 text-emerald-600"></i> Plazos perentorios clave (LN y LENJVOD)</li>
+                        <li class="flex items-center gap-2"><i data-lucide="check" class="w-4 h-4 text-emerald-600"></i> Requisitos solemnes de escrituras y actas</li>
+                        <li class="flex items-center gap-2"><i data-lucide="check" class="w-4 h-4 text-emerald-600"></i> Repaso activo con vuelta de tarjeta</li>
                     </ul>
                 </div>
-                <a href="{{ url_for('flashcards') }}" class="w-full py-2.5 rounded-lg bg-amber-600 hover:bg-amber-500 text-white font-medium text-sm text-center transition-colors">
+                <a href="{{ url_for('flashcards') }}" class="w-full py-3 rounded-xl bg-amber-600 hover:bg-amber-500 text-white font-bold text-base text-center transition-colors">
                     Repasar Fichas ({{ stats.total_flashcards }})
                 </a>
             </div>
@@ -199,14 +199,14 @@
             {% for cat in categories %}
             <a href="{{ url_for('practica') }}?cat={{ cat.id }}" class="bg-white rounded-xl p-5 border border-slate-200 hover:border-blue-400 hover:shadow-md transition-all group">
                 <div class="flex items-start justify-between mb-2">
-                    <h3 class="font-bold text-slate-900 group-hover:text-blue-600 transition-colors text-sm">
+                    <h3 class="font-bold text-slate-900 group-hover:text-blue-600 transition-colors text-base">
                         {{ cat.name }}
                     </h3>
-                    <span class="text-xs font-semibold px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 shrink-0">
+                    <span class="text-xs font-semibold px-2.5 py-1 rounded-full bg-slate-100 text-slate-700 shrink-0">
                         {{ cat.question_count }} casos
                     </span>
                 </div>
-                <p class="text-xs text-slate-500 leading-relaxed">
+                <p class="text-sm sm:text-base text-slate-600 leading-relaxed">
                     {{ cat.description }}
                 </p>
             </a>

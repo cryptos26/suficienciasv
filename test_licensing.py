@@ -4,6 +4,26 @@ from app import app
 import database as db
 
 class TestMonetizationAndLicensing(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        import shutil, tempfile, os
+        cls.orig_db = db.DB_PATH
+        cls.tmp_dir = tempfile.mkdtemp()
+        cls.tmp_db = os.path.join(cls.tmp_dir, "test_notariado.db")
+        shutil.copyfile(cls.orig_db, cls.tmp_db)
+        db.DB_PATH = cls.tmp_db
+
+    @classmethod
+    def tearDownClass(cls):
+        import shutil, os
+        db.DB_PATH = cls.orig_db
+        if os.path.exists(cls.tmp_db):
+            try: os.remove(cls.tmp_db)
+            except Exception: pass
+        if os.path.exists(cls.tmp_dir):
+            try: shutil.rmtree(cls.tmp_dir, ignore_errors=True)
+            except Exception: pass
+
     def setUp(self):
         self.client = app.test_client()
         self.client.testing = True
@@ -43,7 +63,7 @@ class TestMonetizationAndLicensing(unittest.TestCase):
         data = res.get_json()
         self.assertTrue(data["success"])
         self.assertTrue(data["license_key"].startswith("NOT-VITA-"))
-        self.assertEqual(data["amount_usd"], 49.99)
+        self.assertEqual(data["amount_usd"], 34.99)
 
         # Verify device is now licensed
         lic = db.check_device_license(dev)
@@ -107,7 +127,7 @@ class TestMonetizationAndLicensing(unittest.TestCase):
         data_val = res_val.get_json()
         self.assertTrue(data_val["valid"])
         self.assertEqual(data_val["discount"], 5.0)
-        self.assertEqual(data_val["discounted_price"], 44.99)
+        self.assertEqual(data_val["discounted_price"], 29.99)
 
         # 2. Test validate non-existent ambassador
         res_fake = self.client.get("/api/referral/validate?code=CODIGO-FALSO-999&plan=vitalicia")
@@ -129,7 +149,7 @@ class TestMonetizationAndLicensing(unittest.TestCase):
         self.assertEqual(res_checkout.status_code, 200)
         order_data = res_checkout.get_json()
         self.assertTrue(order_data["success"])
-        self.assertEqual(order_data["amount_usd"], 44.99)
+        self.assertEqual(order_data["amount_usd"], 29.99)
         self.assertEqual(order_data["discount_usd"], 5.0)
         self.assertEqual(order_data["referral_code"], "SUFICIENCIA-VIP")
 
@@ -138,7 +158,7 @@ class TestMonetizationAndLicensing(unittest.TestCase):
         matching_comm = [c for c in commissions if c["order_id"] == order_data["order_id"]]
         self.assertEqual(len(matching_comm), 1, "Must record exactly 1 commission for the order")
         comm = matching_comm[0]
-        self.assertEqual(comm["amount_usd"], 10.0, "Vitalicia plan gives $10.00 USD commission")
+        self.assertEqual(comm["amount_usd"], 5.0, "Vitalicia plan gives $5.00 USD commission")
         self.assertEqual(comm["strike_handle"], "miltonrb")
         self.assertEqual(comm["status"], "PENDIENTE")
 

@@ -193,15 +193,81 @@ document.addEventListener('DOMContentLoaded', () => {
         return map[catId] || catId;
     }
 
-    // Select option handler
+    const autoAdvanceToggle = document.getElementById('auto-advance-toggle');
+    let autoAdvanceTimer = null;
+
+    function selectOption(selectedOpt) {
+        if (!questions || questions.length === 0) return;
+        const currentQ = questions[currentIndex];
+        userAnswers[currentQ.id] = selectedOpt;
+
+        // Immediate visual feedback on selected card
+        const optionCards = optionsContainer.querySelectorAll('.option-card');
+        optionCards.forEach(card => {
+            const opt = card.dataset.option;
+            const indicator = card.querySelector('.opt-indicator');
+            if (selectedOpt === opt) {
+                card.classList.add('selected', 'border-blue-600', 'bg-blue-50/90', 'ring-2', 'ring-blue-500/20');
+                indicator.classList.remove('border-slate-300', 'text-slate-700', 'bg-white');
+                indicator.classList.add('border-blue-600', 'bg-blue-600', 'text-white');
+            } else {
+                card.classList.remove('selected', 'border-blue-600', 'bg-blue-50/90', 'ring-2', 'ring-blue-500/20');
+                indicator.classList.remove('border-blue-600', 'bg-blue-600', 'text-white');
+                indicator.classList.add('border-slate-300', 'text-slate-700', 'bg-white');
+            }
+        });
+
+        updatePalette();
+
+        // Auto-advance to next question if enabled
+        if (autoAdvanceToggle && autoAdvanceToggle.checked) {
+            clearTimeout(autoAdvanceTimer);
+            if (currentIndex < questions.length - 1) {
+                nextBtn.classList.add('ring-4', 'ring-blue-300');
+                autoAdvanceTimer = setTimeout(() => {
+                    nextBtn.classList.remove('ring-4', 'ring-blue-300');
+                    renderQuestion(currentIndex + 1);
+                }, 260);
+            }
+        }
+    }
+
+    // Select option handler on click
     optionsContainer.querySelectorAll('.option-card').forEach(card => {
         card.addEventListener('click', () => {
-            const selectedOpt = card.dataset.option;
-            const currentQ = questions[currentIndex];
-            userAnswers[currentQ.id] = selectedOpt;
-
-            renderQuestion(currentIndex);
+            selectOption(card.dataset.option);
         });
+    });
+
+    // Keyboard Shortcuts: 1-4, A-D, Arrow keys, Enter
+    document.addEventListener('keydown', (e) => {
+        if (confirmModal && !confirmModal.classList.contains('hidden')) return;
+        if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+
+        const key = e.key.toUpperCase();
+        if (key === 'A' || key === '1') {
+            e.preventDefault();
+            selectOption('A');
+        } else if (key === 'B' || key === '2') {
+            e.preventDefault();
+            selectOption('B');
+        } else if (key === 'C' || key === '3') {
+            e.preventDefault();
+            selectOption('C');
+        } else if (key === 'D' || key === '4') {
+            e.preventDefault();
+            selectOption('D');
+        } else if (e.key === 'ArrowRight' || e.key === 'Enter') {
+            e.preventDefault();
+            if (currentIndex < questions.length - 1) {
+                renderQuestion(currentIndex + 1);
+            } else {
+                openSubmitModal();
+            }
+        } else if (e.key === 'ArrowLeft') {
+            e.preventDefault();
+            if (currentIndex > 0) renderQuestion(currentIndex - 1);
+        }
     });
 
     // Toggle Flag

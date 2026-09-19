@@ -3,6 +3,26 @@ from app import app
 import database as db
 
 class TestNotariadoSimulador(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        import shutil, tempfile, os
+        cls.orig_db = db.DB_PATH
+        cls.tmp_dir = tempfile.mkdtemp()
+        cls.tmp_db = os.path.join(cls.tmp_dir, "test_notariado_app.db")
+        shutil.copyfile(cls.orig_db, cls.tmp_db)
+        db.DB_PATH = cls.tmp_db
+
+    @classmethod
+    def tearDownClass(cls):
+        import shutil, os
+        db.DB_PATH = cls.orig_db
+        if os.path.exists(cls.tmp_db):
+            try: os.remove(cls.tmp_db)
+            except Exception: pass
+        if os.path.exists(cls.tmp_dir):
+            try: shutil.rmtree(cls.tmp_dir, ignore_errors=True)
+            except Exception: pass
+
     def setUp(self):
         self.client = app.test_client()
         self.client.testing = True

@@ -196,7 +196,7 @@ def init_db():
         strike_handle TEXT NOT NULL,
         wallet_type TEXT DEFAULT 'strike',
         discount_usd REAL DEFAULT 5.0,
-        commission_vitalicia REAL DEFAULT 10.0,
+        commission_vitalicia REAL DEFAULT 5.0,
         commission_trimestral REAL DEFAULT 5.0,
         commission_mensual REAL DEFAULT 3.0,
         total_earned REAL DEFAULT 0.0,
@@ -246,13 +246,20 @@ def init_db():
     except Exception:
         pass
 
+    # Auto-migrate vitalicia commissions and ambassador defaults to $5.00
+    try:
+        cursor.execute("UPDATE commissions SET amount_usd = 5.0 WHERE plan_type = 'vitalicia' AND amount_usd = 10.0")
+        cursor.execute("UPDATE ambassadors SET commission_vitalicia = 5.0 WHERE commission_vitalicia = 10.0")
+    except Exception:
+        pass
+
     # Seed default Ambassador if none exist
     cursor.execute("SELECT COUNT(*) FROM ambassadors")
     if cursor.fetchone()[0] == 0:
         cursor.execute("""
             INSERT INTO ambassadors (code, name, email, strike_handle, wallet_type, discount_usd, commission_vitalicia, commission_trimestral, commission_mensual, created_at)
             VALUES (?, ?, ?, ?, 'strike', ?, ?, ?, ?, ?)
-        """, ('SUFICIENCIA-VIP', 'Embajador Fundador', 'miltonrb@strike.me', 'miltonrb', 5.0, 10.0, 5.0, 3.0, datetime.now().strftime("%Y-%m-%d %H:%M:%S")))
+        """, ('SUFICIENCIA-VIP', 'Embajador Fundador', 'miltonrb@strike.me', 'miltonrb', 5.0, 5.0, 5.0, 3.0, datetime.now().strftime("%Y-%m-%d %H:%M:%S")))
 
     # Check if categories table is populated
     cursor.execute("SELECT COUNT(*) FROM categories")
@@ -976,7 +983,7 @@ def get_ambassador(code):
     conn.close()
     return dict(row) if row else None
 
-def create_or_update_ambassador(code, name, strike_handle, email="", discount_usd=5.0, commission_vitalicia=10.0, commission_trimestral=5.0, commission_mensual=3.0, wallet_type="strike"):
+def create_or_update_ambassador(code, name, strike_handle, email="", discount_usd=5.0, commission_vitalicia=5.0, commission_trimestral=5.0, commission_mensual=3.0, wallet_type="strike"):
     code_clean = str(code).strip().upper()
     now_str = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     
@@ -1062,7 +1069,7 @@ def record_commission(order_id, ambassador_code, buyer_name, plan_type):
 
     # Calculate commission based on plan
     if plan_type == "vitalicia":
-        comm_amount = float(amb.get("commission_vitalicia", 10.0))
+        comm_amount = float(amb.get("commission_vitalicia", 5.0))
     elif plan_type == "90_dias":
         comm_amount = float(amb.get("commission_trimestral", 5.0))
     else:

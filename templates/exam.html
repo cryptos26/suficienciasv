@@ -22,43 +22,51 @@
 
     <!-- Active Exam Container (Hidden until loaded) -->
     <div id="exam-container" class="hidden">
-        <!-- Sticky Exam Controls Bar -->
-        <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-4 mb-6 sticky top-20 z-40 flex flex-wrap items-center justify-between gap-4">
-            <div class="flex items-center gap-3">
-                <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Examen CSJ</span>
-                <span class="text-slate-300">|</span>
-                <span id="current-q-indicator" class="text-sm font-semibold text-slate-800">
-                    Pregunta <span id="current-q-num">1</span> de <span id="total-q-count">20</span>
+        <!-- Compact Sticky Exam Controls Bar -->
+        <div class="bg-white/95 backdrop-blur rounded-xl border border-slate-200 shadow-sm p-3 mb-3 sticky top-16 z-40 flex flex-wrap items-center justify-between gap-3">
+            <div class="flex items-center gap-2 sm:gap-3">
+                <span class="text-xs font-bold uppercase tracking-wider text-slate-400 hidden sm:inline">Examen CSJ</span>
+                <span class="text-slate-300 hidden sm:inline">|</span>
+                <span id="current-q-indicator" class="text-sm sm:text-base font-bold text-slate-800">
+                    Pregunta <span id="current-q-num" class="text-blue-700">1</span> de <span id="total-q-count">20</span>
                 </span>
             </div>
 
+            <!-- Central Auto-Advance Toggle -->
+            <label class="inline-flex items-center gap-2 cursor-pointer bg-blue-50/80 hover:bg-blue-100/80 border border-blue-200 px-3 py-1.5 rounded-xl transition-all select-none" title="Al marcar una opción, avanza automáticamente al siguiente caso">
+                <input type="checkbox" id="auto-advance-toggle" class="w-4 h-4 text-blue-600 rounded border-slate-300 focus:ring-blue-500 cursor-pointer" checked>
+                <span class="text-xs sm:text-sm font-bold text-blue-950 flex items-center gap-1.5">
+                    <i data-lucide="zap" class="w-4 h-4 text-amber-500"></i> Avance Automático
+                </span>
+            </label>
+
             <!-- Central Countdown Timer -->
-            <div class="flex items-center gap-2 bg-slate-900 text-white px-4 py-2 rounded-lg font-mono text-base font-bold shadow-inner" id="timer-box">
+            <div class="flex items-center gap-2 bg-slate-900 text-white px-3.5 py-1.5 rounded-xl font-mono text-sm sm:text-base font-bold shadow-inner" id="timer-box">
                 <i data-lucide="clock" class="w-4 h-4 text-gold-500" id="timer-icon"></i>
                 <span id="timer-display">25:00</span>
             </div>
 
             <!-- Right Controls: Flag and Finish -->
-            <div class="flex items-center gap-3">
-                <button id="flag-btn" type="button" class="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-50 text-xs font-semibold transition-all">
+            <div class="flex items-center gap-2 sm:gap-3">
+                <button id="flag-btn" type="button" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-slate-200 text-slate-700 hover:bg-slate-50 text-xs sm:text-sm font-semibold transition-all">
                     <i data-lucide="flag" class="w-4 h-4 text-amber-500"></i>
                     <span id="flag-text">Marcar Duda</span>
                 </button>
-                <button id="finish-btn" type="button" class="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-red-600 hover:bg-red-500 text-white text-xs font-bold shadow transition-all">
+                <button id="finish-btn" type="button" class="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-red-600 hover:bg-red-500 text-white text-xs sm:text-sm font-bold shadow transition-all">
                     <i data-lucide="check-square" class="w-4 h-4"></i>
-                    <span>Finalizar y Calificar</span>
+                    <span>Finalizar</span>
                 </button>
             </div>
         </div>
 
         <!-- Main Layout: Question Canvas & Palette Grid -->
-        <div class="grid lg:grid-cols-4 gap-6">
+        <div class="grid lg:grid-cols-4 gap-4 items-start">
             <!-- Left: Question & Options Canvas (Cols 3) -->
-            <div class="lg:col-span-3 space-y-6">
-                <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 sm:p-8">
+            <div class="lg:col-span-3">
+                <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-4 sm:p-6">
                     <!-- Category & Difficulty Badges -->
-                    <div class="flex items-center justify-between mb-4 pb-3 border-b border-slate-100">
-                        <span id="q-category" class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-blue-50 text-blue-800 border border-blue-100">
+                    <div class="flex items-center justify-between mb-3 pb-2 border-b border-slate-100">
+                        <span id="q-category" class="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full text-xs font-semibold bg-blue-50 text-blue-800 border border-blue-100">
                             <i data-lucide="tag" class="w-3.5 h-3.5"></i> <span id="category-text">Ley de Notariado</span>
                         </span>
                         <span id="q-difficulty" class="text-xs font-medium text-slate-400">
@@ -67,67 +75,67 @@
                     </div>
 
                     <!-- Case Scenario Text -->
-                    <div class="mb-8">
-                        <div class="text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">Caso Práctico:</div>
-                        <p id="q-text" class="font-serif-legal text-lg sm:text-xl text-slate-900 leading-relaxed font-normal">
+                    <div class="mb-3.5">
+                        <div class="text-xs font-bold uppercase tracking-wider text-slate-400 mb-1">Caso Práctico:</div>
+                        <p id="q-text" class="font-serif-legal text-base sm:text-lg text-slate-900 leading-snug font-normal">
                             <!-- Question text injected here -->
                         </p>
                     </div>
 
-                    <!-- Options List -->
-                    <div class="space-y-3 mb-8" id="options-container">
+                    <!-- Options List (Single-screen compact fit) -->
+                    <div class="space-y-2 mb-4" id="options-container">
                         <!-- Option A -->
-                        <div class="option-card border-2 border-slate-200 rounded-xl p-4 cursor-pointer flex items-start gap-4 transition-all" data-option="A">
-                            <div class="w-7 h-7 rounded-full border-2 border-slate-300 flex items-center justify-center font-bold text-xs text-slate-600 shrink-0 mt-0.5 opt-indicator">
+                        <div class="option-card border-2 border-slate-200 hover:border-blue-500 hover:bg-blue-50/40 rounded-xl p-2.5 sm:p-3 cursor-pointer flex items-center gap-3 transition-all" data-option="A">
+                            <div class="w-7 h-7 sm:w-8 sm:h-8 rounded-full border-2 border-slate-300 flex items-center justify-center font-extrabold text-xs sm:text-sm text-slate-700 shrink-0 opt-indicator">
                                 A
                             </div>
-                            <div class="text-sm sm:text-base text-slate-800 leading-normal" id="opt-text-A"></div>
+                            <div class="text-sm sm:text-base text-slate-800 leading-snug flex-1" id="opt-text-A"></div>
                         </div>
 
                         <!-- Option B -->
-                        <div class="option-card border-2 border-slate-200 rounded-xl p-4 cursor-pointer flex items-start gap-4 transition-all" data-option="B">
-                            <div class="w-7 h-7 rounded-full border-2 border-slate-300 flex items-center justify-center font-bold text-xs text-slate-600 shrink-0 mt-0.5 opt-indicator">
+                        <div class="option-card border-2 border-slate-200 hover:border-blue-500 hover:bg-blue-50/40 rounded-xl p-2.5 sm:p-3 cursor-pointer flex items-center gap-3 transition-all" data-option="B">
+                            <div class="w-7 h-7 sm:w-8 sm:h-8 rounded-full border-2 border-slate-300 flex items-center justify-center font-extrabold text-xs sm:text-sm text-slate-700 shrink-0 opt-indicator">
                                 B
                             </div>
-                            <div class="text-sm sm:text-base text-slate-800 leading-normal" id="opt-text-B"></div>
+                            <div class="text-sm sm:text-base text-slate-800 leading-snug flex-1" id="opt-text-B"></div>
                         </div>
 
                         <!-- Option C -->
-                        <div class="option-card border-2 border-slate-200 rounded-xl p-4 cursor-pointer flex items-start gap-4 transition-all" data-option="C">
-                            <div class="w-7 h-7 rounded-full border-2 border-slate-300 flex items-center justify-center font-bold text-xs text-slate-600 shrink-0 mt-0.5 opt-indicator">
+                        <div class="option-card border-2 border-slate-200 hover:border-blue-500 hover:bg-blue-50/40 rounded-xl p-2.5 sm:p-3 cursor-pointer flex items-center gap-3 transition-all" data-option="C">
+                            <div class="w-7 h-7 sm:w-8 sm:h-8 rounded-full border-2 border-slate-300 flex items-center justify-center font-extrabold text-xs sm:text-sm text-slate-700 shrink-0 opt-indicator">
                                 C
                             </div>
-                            <div class="text-sm sm:text-base text-slate-800 leading-normal" id="opt-text-C"></div>
+                            <div class="text-sm sm:text-base text-slate-800 leading-snug flex-1" id="opt-text-C"></div>
                         </div>
 
                         <!-- Option D -->
-                        <div class="option-card border-2 border-slate-200 rounded-xl p-4 cursor-pointer flex items-start gap-4 transition-all" data-option="D">
-                            <div class="w-7 h-7 rounded-full border-2 border-slate-300 flex items-center justify-center font-bold text-xs text-slate-600 shrink-0 mt-0.5 opt-indicator">
+                        <div class="option-card border-2 border-slate-200 hover:border-blue-500 hover:bg-blue-50/40 rounded-xl p-2.5 sm:p-3 cursor-pointer flex items-center gap-3 transition-all" data-option="D">
+                            <div class="w-7 h-7 sm:w-8 sm:h-8 rounded-full border-2 border-slate-300 flex items-center justify-center font-extrabold text-xs sm:text-sm text-slate-700 shrink-0 opt-indicator">
                                 D
                             </div>
-                            <div class="text-sm sm:text-base text-slate-800 leading-normal" id="opt-text-D"></div>
+                            <div class="text-sm sm:text-base text-slate-800 leading-snug flex-1" id="opt-text-D"></div>
                         </div>
                     </div>
 
-                    <!-- Bottom Prev / Next Navigation -->
-                    <div class="flex items-center justify-between pt-4 border-t border-slate-100">
-                        <button id="prev-btn" type="button" class="px-5 py-2.5 rounded-lg border border-slate-300 hover:bg-slate-50 text-slate-700 font-semibold text-sm transition-colors flex items-center gap-2">
+                    <!-- Bottom Navigation: Always in View Without Scrolling -->
+                    <div class="flex items-center justify-between pt-3 border-t border-slate-100">
+                        <button id="prev-btn" type="button" class="px-4 sm:px-5 py-2 rounded-xl border border-slate-300 hover:bg-slate-50 text-slate-700 font-bold text-sm sm:text-base transition-colors flex items-center gap-1.5">
                             <i data-lucide="chevron-left" class="w-4 h-4"></i> Anterior
                         </button>
-                        <div class="text-xs text-slate-400 hidden sm:block">
-                            Usa las flechas o la paleta para navegar
+                        <div class="text-xs sm:text-sm text-slate-500 hidden sm:flex items-center gap-2">
+                            <span>Atajos: <kbd class="px-1.5 py-0.5 rounded bg-slate-100 border font-mono font-bold text-slate-700">A-D</kbd> o <kbd class="px-1.5 py-0.5 rounded bg-slate-100 border font-mono font-bold text-slate-700">1-4</kbd> • <kbd class="px-1.5 py-0.5 rounded bg-slate-100 border font-mono font-bold text-slate-700">Enter / →</kbd> Siguiente</span>
                         </div>
-                        <button id="next-btn" type="button" class="px-6 py-2.5 rounded-lg bg-blue-700 hover:bg-blue-600 text-white font-semibold text-sm transition-colors flex items-center gap-2">
-                            Siguiente <i data-lucide="chevron-right" class="w-4 h-4"></i>
+                        <button id="next-btn" type="button" class="px-5 sm:px-6 py-2 rounded-xl bg-blue-700 hover:bg-blue-600 text-white font-bold text-sm sm:text-base shadow transition-all flex items-center gap-1.5">
+                            <span>Siguiente</span> <i data-lucide="chevron-right" class="w-4 h-4"></i>
                         </button>
                     </div>
                 </div>
             </div>
 
             <!-- Right: Question Palette & Progress (Col 1) -->
-            <div class="lg:col-span-1 space-y-6">
-                <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 sticky top-40">
-                    <h3 class="text-sm font-bold text-slate-800 mb-3 flex items-center justify-between">
+            <div class="lg:col-span-1">
+                <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-4 sticky top-36">
+                    <h3 class="text-sm font-bold text-slate-800 mb-2 flex items-center justify-between">
                         <span>Navegador de Preguntas</span>
                         <span id="answered-count-badge" class="text-xs font-semibold px-2 py-0.5 rounded-full bg-blue-50 text-blue-700">
                             0 / 20
@@ -135,28 +143,28 @@
                     </h3>
 
                     <!-- Status Legend -->
-                    <div class="flex items-center gap-3 text-xs text-slate-500 mb-4 pb-3 border-b border-slate-100">
+                    <div class="flex items-center gap-3 text-xs text-slate-500 mb-3 pb-2 border-b border-slate-100">
                         <div class="flex items-center gap-1">
-                            <div class="w-3 h-3 rounded bg-blue-600"></div>
+                            <div class="w-2.5 h-2.5 rounded bg-blue-600"></div>
                             <span>Lista</span>
                         </div>
                         <div class="flex items-center gap-1">
-                            <div class="w-3 h-3 rounded border border-slate-300 bg-white"></div>
+                            <div class="w-2.5 h-2.5 rounded border border-slate-300 bg-white"></div>
                             <span>Pendiente</span>
                         </div>
                         <div class="flex items-center gap-1">
-                            <div class="w-3 h-3 rounded border-2 border-amber-500 bg-amber-50"></div>
+                            <div class="w-2.5 h-2.5 rounded border-2 border-amber-500 bg-amber-50"></div>
                             <span>Duda</span>
                         </div>
                     </div>
 
                     <!-- 20 Question Button Grid -->
-                    <div id="palette-grid" class="grid grid-cols-5 gap-2 mb-6">
+                    <div id="palette-grid" class="grid grid-cols-5 gap-1.5 mb-3">
                         <!-- Injected dynamically -->
                     </div>
 
                     <!-- Progress Statistics Bar -->
-                    <div class="space-y-2 text-xs text-slate-600 pt-3 border-t border-slate-100">
+                    <div class="space-y-1.5 text-xs text-slate-600 pt-2 border-t border-slate-100">
                         <div class="flex justify-between">
                             <span>Respondidas:</span>
                             <span id="stat-answered" class="font-bold text-blue-700">0</span>
