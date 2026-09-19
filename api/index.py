@@ -1,4 +1,4 @@
-﻿import sys
+import sys
 import os
 
 # Ensure the project root directory is in sys.path
