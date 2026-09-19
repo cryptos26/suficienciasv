@@ -95,5 +95,43 @@ class TestNotariadoSimulador(unittest.TestCase):
         self.assertEqual(prof['full_name'], 'Lic. Ana Sofía Martínez')
         self.assertEqual(prof['university'], 'Universidad Dr. José Matías Delgado')
 
+    def test_embajadores_page(self):
+        response = self.client.get('/embajadores')
+        self.assertEqual(response.status_code, 200)
+        self.assertIn(b'Blink Wallet', response.data)
+        self.assertIn(b'Strike', response.data)
+
+    def test_ambassador_registration_blink_and_strike(self):
+        import secrets
+        unique_code = f"BLINK-{secrets.token_hex(3).upper()}"
+        # 1. Register Blink Ambassador
+        resp_blink = self.client.post('/api/ambassadors/register', json={
+            'name': 'Lic. Roberto Blink',
+            'strike_handle': 'robertoblink@blink.sv',
+            'code': unique_code,
+            'email': 'roberto@blink.sv',
+            'wallet_type': 'blink'
+        })
+        self.assertEqual(resp_blink.status_code, 200)
+        data_b = resp_blink.get_json()
+        self.assertTrue(data_b['success'])
+        self.assertIn('Blink Wallet', data_b['message'])
+
+        amb_b = db.get_ambassador(unique_code)
+        self.assertIsNotNone(amb_b)
+        self.assertEqual(amb_b.get('wallet_type'), 'blink')
+        self.assertEqual(amb_b.get('strike_handle'), 'robertoblink')
+
+        # 2. Record commission for Blink Ambassador
+        comm_b = db.record_commission(
+            order_id=f'TEST-ORD-{unique_code}',
+            ambassador_code=unique_code,
+            buyer_name='Aspirante Notario',
+            plan_type='vitalicia'
+        )
+        self.assertIsNotNone(comm_b)
+        self.assertEqual(comm_b.get('wallet_type'), 'blink')
+        self.assertIn('pay.blink.sv/robertoblink', comm_b.get('payout_url', ''))
+
 if __name__ == '__main__':
     unittest.main()

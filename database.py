@@ -169,6 +169,7 @@ def init_db():
         name TEXT NOT NULL,
         email TEXT,
         strike_handle TEXT NOT NULL,
+        wallet_type TEXT DEFAULT 'strike',
         discount_usd REAL DEFAULT 5.0,
         commission_vitalicia REAL DEFAULT 10.0,
         commission_trimestral REAL DEFAULT 5.0,
@@ -180,7 +181,7 @@ def init_db():
     );
     """)
 
-    # Table for Commission payouts ledger
+    # Table for Commission payouts ledger (Strike / Blink)
     cursor.execute("""
     CREATE TABLE IF NOT EXISTS commissions (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -190,6 +191,7 @@ def init_db():
         plan_type TEXT NOT NULL,
         amount_usd REAL NOT NULL,
         strike_handle TEXT NOT NULL,
+        wallet_type TEXT DEFAULT 'strike',
         status TEXT DEFAULT 'PENDIENTE',
         created_at TEXT NOT NULL,
         paid_at TEXT,
@@ -197,7 +199,7 @@ def init_db():
     );
     """)
 
-    # Ensure orders columns exist for backwards compatibility with pre-existing local databases
+    # Ensure orders and ambassador columns exist for backwards compatibility
     try:
         cursor.execute("ALTER TABLE orders ADD COLUMN payment_method TEXT DEFAULT 'tarjeta';")
     except Exception:
@@ -210,13 +212,21 @@ def init_db():
         cursor.execute("ALTER TABLE orders ADD COLUMN referral_code TEXT DEFAULT '';")
     except Exception:
         pass
+    try:
+        cursor.execute("ALTER TABLE ambassadors ADD COLUMN wallet_type TEXT DEFAULT 'strike';")
+    except Exception:
+        pass
+    try:
+        cursor.execute("ALTER TABLE commissions ADD COLUMN wallet_type TEXT DEFAULT 'strike';")
+    except Exception:
+        pass
 
     # Seed default Ambassador if none exist
     cursor.execute("SELECT COUNT(*) FROM ambassadors")
     if cursor.fetchone()[0] == 0:
         cursor.execute("""
-            INSERT INTO ambassadors (code, name, email, strike_handle, discount_usd, commission_vitalicia, commission_trimestral, commission_mensual, created_at)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+            INSERT INTO ambassadors (code, name, email, strike_handle, wallet_type, discount_usd, commission_vitalicia, commission_trimestral, commission_mensual, created_at)
+            VALUES (?, ?, ?, ?, 'strike', ?, ?, ?, ?, ?)
         """, ('SUFICIENCIA-VIP', 'Embajador Fundador', 'miltonrb@strike.me', 'miltonrb', 5.0, 10.0, 5.0, 3.0, datetime.now().strftime("%Y-%m-%d %H:%M:%S")))
 
     # Check if categories table is populated
@@ -623,16 +633,32 @@ def get_ambassador(code):
     conn.close()
     return dict(row) if row else None
 
-def create_or_update_ambassador(code, name, strike_handle, email="", discount_usd=5.0, commission_vitalicia=10.0, commission_trimestral=5.0, commission_mensual=3.0):
+def create_or_update_ambassador(code, name, strike_handle, email="", discount_usd=5.0, commission_vitalicia=10.0, commission_trimestral=5.0, commission_mensual=3.0, wallet_type="strike"):
     code_clean = str(code).strip().upper()
     now_str = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    clean_handle = strike_handle.strip().replace("@", "").replace("https://strike.me/", "")
+    
+    # Auto-detect wallet type if handle includes domain or if specified
+    raw_handle = str(strike_handle).strip()
+    w_type = str(wallet_type).strip().lower() if wallet_type else "strike"
+    if "blink" in raw_handle.lower() or "blink" in w_type:
+        w_type = "blink"
+    else:
+        w_type = "strike"
+
+    clean_handle = raw_handle
+    for pfx in ["https://pay.blink.sv/", "http://pay.blink.sv/", "pay.blink.sv/", "https://strike.me/", "http://strike.me/", "strike.me/"]:
+        clean_handle = clean_handle.replace(pfx, "")
+    for sfx in ["@blink.sv", "blink.sv", "@strike.me", "strike.me"]:
+        if clean_handle.endswith(sfx):
+            clean_handle = clean_handle[:-len(sfx)]
+    clean_handle = clean_handle.replace("@", "").strip("/ ")
 
     doc_data = {
         "code": code_clean,
         "name": name.strip(),
         "email": email.strip(),
         "strike_handle": clean_handle,
+        "wallet_type": w_type,
         "discount_usd": float(discount_usd),
         "commission_vitalicia": float(commission_vitalicia),
         "commission_trimestral": float(commission_trimestral),
@@ -653,17 +679,18 @@ def create_or_update_ambassador(code, name, strike_handle, email="", discount_us
     conn = get_db_connection()
     cursor = conn.cursor()
     cursor.execute("""
-        INSERT INTO ambassadors (code, name, email, strike_handle, discount_usd, commission_vitalicia, commission_trimestral, commission_mensual, total_earned, total_paid, created_at, is_active)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, 0.0, 0.0, ?, 1)
+        INSERT INTO ambassadors (code, name, email, strike_handle, wallet_type, discount_usd, commission_vitalicia, commission_trimestral, commission_mensual, total_earned, total_paid, created_at, is_active)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 0.0, 0.0, ?, 1)
         ON CONFLICT(code) DO UPDATE SET
             name = excluded.name,
             email = excluded.email,
             strike_handle = excluded.strike_handle,
+            wallet_type = excluded.wallet_type,
             discount_usd = excluded.discount_usd,
             commission_vitalicia = excluded.commission_vitalicia,
             commission_trimestral = excluded.commission_trimestral,
             commission_mensual = excluded.commission_mensual
-    """, (code_clean, doc_data["name"], doc_data["email"], doc_data["strike_handle"], doc_data["discount_usd"], doc_data["commission_vitalicia"], doc_data["commission_trimestral"], doc_data["commission_mensual"], now_str))
+    """, (code_clean, doc_data["name"], doc_data["email"], doc_data["strike_handle"], doc_data["wallet_type"], doc_data["discount_usd"], doc_data["commission_vitalicia"], doc_data["commission_trimestral"], doc_data["commission_mensual"], now_str))
     conn.commit()
     conn.close()
     return True
@@ -700,6 +727,12 @@ def record_commission(order_id, ambassador_code, buyer_name, plan_type):
 
     now_str = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     strike_handle = amb.get("strike_handle", "")
+    wallet_type = amb.get("wallet_type", "strike")
+    if wallet_type == "blink":
+        payout_url = f"https://pay.blink.sv/{strike_handle}"
+    else:
+        payout_url = f"https://strike.me/{strike_handle}"
+
     comm_id = f"COM-{secrets.token_hex(4).upper()}"
 
     comm_data = {
@@ -711,6 +744,8 @@ def record_commission(order_id, ambassador_code, buyer_name, plan_type):
         "plan_type": plan_type,
         "amount_usd": comm_amount,
         "strike_handle": strike_handle,
+        "wallet_type": wallet_type,
+        "payout_url": payout_url,
         "status": "PENDIENTE",
         "created_at": now_str,
         "paid_at": "",
@@ -733,9 +768,9 @@ def record_commission(order_id, ambassador_code, buyer_name, plan_type):
     conn = get_db_connection()
     cursor = conn.cursor()
     cursor.execute("""
-        INSERT INTO commissions (order_id, ambassador_code, buyer_name, plan_type, amount_usd, strike_handle, status, created_at, paid_at, payout_reference)
-        VALUES (?, ?, ?, ?, ?, ?, 'PENDIENTE', ?, '', '')
-    """, (order_id, amb["code"], buyer_name, plan_type, comm_amount, strike_handle, now_str))
+        INSERT INTO commissions (order_id, ambassador_code, buyer_name, plan_type, amount_usd, strike_handle, wallet_type, status, created_at, paid_at, payout_reference)
+        VALUES (?, ?, ?, ?, ?, ?, ?, 'PENDIENTE', ?, '', '')
+    """, (order_id, amb["code"], buyer_name, plan_type, comm_amount, strike_handle, wallet_type, now_str))
     cursor.execute("""
         UPDATE ambassadors SET total_earned = total_earned + ? WHERE code = ?
     """, (comm_amount, amb["code"]))
@@ -766,7 +801,7 @@ def get_commissions(status=None):
     conn.close()
     return [dict(r) for r in rows]
 
-def mark_commission_paid(commission_id, payout_reference="Pago vía Strike"):
+def mark_commission_paid(commission_id, payout_reference="Pago vía Lightning"):
     now_str = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
     if HAS_FIREBASE:

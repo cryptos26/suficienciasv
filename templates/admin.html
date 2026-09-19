@@ -138,18 +138,18 @@
                     <div class="text-xs text-blue-800 mt-1">10 Claves Vitalicias en 1 clic</div>
                 </button>
             </div>
-        <!-- AMBASSADORS & STRIKE COMMISSIONS SECTION -->
+        <!-- AMBASSADORS & LIGHTNING COMMISSIONS SECTION (STRIKE / BLINK) -->
         <div class="bg-white rounded-2xl border-2 border-amber-300 shadow-sm p-6 sm:p-8 space-y-6">
             <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-4 border-b border-slate-100">
                 <div>
                     <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-500 text-slate-950 text-xs font-black uppercase tracking-wider mb-2">
-                        <i data-lucide="zap" class="w-4 h-4"></i> Pagos vía Strike
+                        <i data-lucide="zap" class="w-4 h-4"></i> Pagos vía Strike y Blink (Lightning)
                     </span>
                     <h2 class="text-xl font-bold text-slate-900">
                         Comisiones de Embajadores Notariales
                     </h2>
                     <p class="text-xs text-slate-600 mt-0.5">
-                        Liquidación directa a billeteras Strike de abogados que refieren nuevos aspirantes.
+                        Liquidación directa a billeteras Strike y Blink Wallet de abogados que refieren nuevos aspirantes.
                     </p>
                 </div>
                 <!-- Mini Stats -->
@@ -178,9 +178,9 @@
                                 <th class="px-4 py-2.5">Aspirante / Orden</th>
                                 <th class="px-4 py-2.5">Plan</th>
                                 <th class="px-4 py-2.5">Comisión</th>
-                                <th class="px-4 py-2.5">Usuario Strike</th>
+                                <th class="px-4 py-2.5">Billetera / Usuario</th>
                                 <th class="px-4 py-2.5">Estado</th>
-                                <th class="px-4 py-2.5 text-right">Liquidación Strike</th>
+                                <th class="px-4 py-2.5 text-right">Liquidación Lightning</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-slate-100">
@@ -199,7 +199,15 @@
                                     ${{ "%.2f"|format(comm.amount_usd) }} USD
                                 </td>
                                 <td class="px-4 py-3 font-mono font-bold text-slate-800">
-                                    <span class="px-2 py-0.5 rounded bg-slate-100 border border-slate-200">@{{ comm.strike_handle }}</span>
+                                    {% if comm.wallet_type == 'blink' %}
+                                    <span class="px-2 py-0.5 rounded bg-yellow-100 text-yellow-900 border border-yellow-300 inline-flex items-center gap-1 text-[11px]">
+                                        🟡 Blink: @{{ comm.strike_handle }}
+                                    </span>
+                                    {% else %}
+                                    <span class="px-2 py-0.5 rounded bg-amber-100 text-amber-900 border border-amber-300 inline-flex items-center gap-1 text-[11px]">
+                                        ⚡ Strike: @{{ comm.strike_handle }}
+                                    </span>
+                                    {% endif %}
                                 </td>
                                 <td class="px-4 py-3">
                                     {% if comm.status == 'PENDIENTE' %}
@@ -214,6 +222,16 @@
                                 </td>
                                 <td class="px-4 py-3 text-right space-x-1">
                                     {% if comm.status == 'PENDIENTE' %}
+                                    {% if comm.wallet_type == 'blink' %}
+                                    <a 
+                                        href="https://pay.blink.sv/{{ comm.strike_handle }}" 
+                                        target="_blank" 
+                                        class="px-2.5 py-1 rounded-lg bg-yellow-400 hover:bg-yellow-300 text-slate-950 font-bold text-[11px] shadow-sm transition-colors inline-flex items-center gap-1"
+                                        title="Abrir Blink Wallet (pay.blink.sv) para transferir"
+                                    >
+                                        <i data-lucide="external-link" class="w-3.5 h-3.5"></i> Pagar en Blink
+                                    </a>
+                                    {% else %}
                                     <a 
                                         href="https://strike.me/{{ comm.strike_handle }}" 
                                         target="_blank" 
@@ -222,14 +240,15 @@
                                     >
                                         <i data-lucide="zap" class="w-3.5 h-3.5"></i> Pagar en Strike
                                     </a>
+                                    {% endif %}
                                     <button 
-                                        onclick="markCommissionPaid('{{ comm.comm_id or comm.id }}')" 
+                                        onclick="markCommissionPaid('{{ comm.comm_id or comm.id }}', '{{ comm.wallet_type or 'strike' }}')" 
                                         class="px-2.5 py-1 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 font-bold text-[11px] transition-colors"
                                     >
                                         Marcar Pagado
                                     </button>
                                     {% else %}
-                                    <span class="text-xs text-slate-400 italic">Liquidado</span>
+                                    <span class="text-xs text-slate-400 italic">Liquidado ({{ comm.payout_reference or 'OK' }})</span>
                                     {% endif %}
                                 </td>
                             </tr>
@@ -256,7 +275,7 @@
                                 <tr>
                                     <th class="px-3 py-2">Código</th>
                                     <th class="px-3 py-2">Nombre</th>
-                                    <th class="px-3 py-2">Strike</th>
+                                    <th class="px-3 py-2">Billetera</th>
                                     <th class="px-3 py-2">Ganado</th>
                                     <th class="px-3 py-2">Pagado</th>
                                 </tr>
@@ -266,7 +285,13 @@
                                 <tr class="hover:bg-slate-50/70">
                                     <td class="px-3 py-2 font-mono font-bold text-indigo-700">{{ a.code }}</td>
                                     <td class="px-3 py-2 font-semibold text-slate-800">{{ a.name }}</td>
-                                    <td class="px-3 py-2 font-mono text-slate-600">@{{ a.strike_handle }}</td>
+                                    <td class="px-3 py-2 font-mono text-slate-600">
+                                        {% if a.wallet_type == 'blink' %}
+                                        <span class="text-yellow-700 font-bold">🟡 Blink:</span> @{{ a.strike_handle }}
+                                        {% else %}
+                                        <span class="text-amber-700 font-bold">⚡ Strike:</span> @{{ a.strike_handle }}
+                                        {% endif %}
+                                    </td>
                                     <td class="px-3 py-2 font-bold text-amber-600">${{ "%.2f"|format(a.total_earned or 0.0) }}</td>
                                     <td class="px-3 py-2 font-bold text-emerald-700">${{ "%.2f"|format(a.total_paid or 0.0) }}</td>
                                 </tr>
@@ -284,7 +309,11 @@
                     <div class="space-y-2 text-xs">
                         <input type="text" id="new-amb-code" placeholder="Código (ej. LIC-MARTINEZ)" class="w-full px-3 py-1.5 rounded-lg border border-slate-300 font-mono font-bold uppercase">
                         <input type="text" id="new-amb-name" placeholder="Nombre completo" class="w-full px-3 py-1.5 rounded-lg border border-slate-300">
-                        <input type="text" id="new-amb-strike" placeholder="Usuario Strike (@username)" class="w-full px-3 py-1.5 rounded-lg border border-slate-300 font-mono">
+                        <select id="new-amb-wallet" class="w-full px-3 py-1.5 rounded-lg border border-slate-300 font-semibold bg-white text-slate-700">
+                            <option value="strike">⚡ Strike (@strike.me)</option>
+                            <option value="blink">🟡 Blink Wallet (@blink.sv)</option>
+                        </select>
+                        <input type="text" id="new-amb-strike" placeholder="Usuario de billetera (sin @)" class="w-full px-3 py-1.5 rounded-lg border border-slate-300 font-mono">
                         <button onclick="createAmbassadorQuick()" class="w-full py-2 rounded-lg bg-navy-900 hover:bg-navy-800 text-white font-bold transition-colors">
                             Guardar Embajador
                         </button>
@@ -436,8 +465,9 @@
         }
     }
 
-    async function markCommissionPaid(commId) {
-        const ref = prompt("Ingresa una nota o ID de transacción de Strike (opcional):", "Transferencia Strike completada");
+    async function markCommissionPaid(commId, walletType = 'strike') {
+        const defNote = walletType === 'blink' ? "Transferencia Blink completada" : "Transferencia Strike completada";
+        const ref = prompt("Ingresa una nota o ID de transacción Lightning (opcional):", defNote);
         if (ref === null) return;
 
         try {
@@ -448,7 +478,7 @@
             });
             const data = await res.json();
             if (data.success) {
-                alert('¡Comisión marcada como pagada vía Strike con éxito!');
+                alert('¡Comisión marcada como pagada con éxito!');
                 location.reload();
             }
         } catch (e) {
@@ -460,10 +490,11 @@
     async function createAmbassadorQuick() {
         const code = document.getElementById('new-amb-code').value.trim();
         const name = document.getElementById('new-amb-name').value.trim();
+        const wallet = document.getElementById('new-amb-wallet').value;
         const strike = document.getElementById('new-amb-strike').value.trim();
 
         if (!code || !name || !strike) {
-            alert('Por favor completa código, nombre y usuario de Strike.');
+            alert('Por favor completa código, nombre y usuario de billetera.');
             return;
         }
 
@@ -471,7 +502,7 @@
             const res = await fetch('/admin/ambassadors/create', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ code, name, strike_handle: strike })
+                body: JSON.stringify({ code, name, strike_handle: strike, wallet_type: wallet })
             });
             const data = await res.json();
             if (data.success) {

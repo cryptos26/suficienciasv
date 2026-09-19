@@ -349,11 +349,18 @@ def api_ambassadors_register():
     data = request.get_json() or {}
     name = data.get("name", "").strip()
     email = data.get("email", "").strip()
-    strike_handle = data.get("strike_handle", "").strip().replace("@", "")
+    strike_handle = data.get("strike_handle", "").strip()
     desired_code = data.get("code", "").strip().upper()
+    wallet_type = data.get("wallet_type", "strike").strip().lower()
+
+    if "blink" in wallet_type or "blink.sv" in strike_handle.lower():
+        wallet_type = "blink"
+    else:
+        wallet_type = "strike"
 
     if not name or not strike_handle or not desired_code:
-        return jsonify({"success": False, "error": "Por favor completa tu nombre, usuario de Strike y código deseado."}), 400
+        wallet_name = "Blink (@blink.sv)" if wallet_type == "blink" else "Strike (@strike.me)"
+        return jsonify({"success": False, "error": f"Por favor completa tu nombre, usuario de {wallet_name} y código deseado."}), 400
 
     existing = db.get_ambassador(desired_code)
     if existing:
@@ -367,11 +374,15 @@ def api_ambassadors_register():
         discount_usd=5.0,
         commission_vitalicia=10.0,
         commission_trimestral=5.0,
-        commission_mensual=3.0
+        commission_mensual=3.0,
+        wallet_type=wallet_type
     )
+    amb_saved = db.get_ambassador(desired_code)
+    clean_saved_handle = amb_saved.get("strike_handle") if amb_saved else strike_handle
+    wallet_label = "Blink Wallet (@blink.sv)" if wallet_type == "blink" else "Strike (@strike.me)"
     return jsonify({
         "success": True,
-        "message": f"¡Felicidades Lic. {name}! Tu código {desired_code} está activo. Recibirás tus comisiones directamente a tu cuenta de Strike @{strike_handle}."
+        "message": f"¡Felicidades Lic. {name}! Tu código {desired_code} está activo. Recibirás tus comisiones directamente a tu cuenta de {wallet_label} (@{clean_saved_handle})."
     })
 
 @app.route("/api/checkout/process", methods=["POST"])
@@ -452,10 +463,11 @@ def api_checkout_process():
     amb_lines = ""
     if ambassador:
         comm_val = comm_record["amount_usd"] if comm_record else 10.0
+        w_type = ambassador.get("wallet_type", "strike").capitalize()
         amb_lines = (
             f"🎁 *Descuento Colegiado Aplicado:* -${discount_usd:.2f} (Código: {ambassador['code']})\n"
-            f"🤝 *Embajador:* {ambassador.get('name')} (Strike: @{ambassador.get('strike_handle')})\n"
-            f"⚡ *Comisión Strike Registrada:* ${comm_val:.2f} USD\n"
+            f"🤝 *Embajador:* {ambassador.get('name')} ({w_type}: @{ambassador.get('strike_handle')})\n"
+            f"⚡ *Comisión Lightning Registrada:* ${comm_val:.2f} USD\n"
         )
 
     wa_msg = (
@@ -540,9 +552,9 @@ def admin_mark_commission_paid(comm_id):
     if not session.get("admin_logged_in"):
         return jsonify({"success": False, "error": "No autorizado"}), 403
     data = request.get_json() or {}
-    payout_ref = data.get("payout_reference", "Pago vía Strike")
+    payout_ref = data.get("payout_reference", "Pago vía Lightning (Strike/Blink)")
     db.mark_commission_paid(comm_id, payout_ref)
-    return jsonify({"success": True, "message": "Comisión marcada como pagada vía Strike"})
+    return jsonify({"success": True, "message": "Comisión marcada como pagada con éxito"})
 
 @app.route("/admin/ambassadors/create", methods=["POST"])
 def admin_create_ambassador():
@@ -553,11 +565,17 @@ def admin_create_ambassador():
     name = data.get("name", "").strip()
     strike_handle = data.get("strike_handle", "").strip().replace("@", "")
     email = data.get("email", "").strip()
+    wallet_type = data.get("wallet_type", "strike").strip().lower()
     discount_usd = float(data.get("discount_usd", 5.0))
     comm_vitalicia = float(data.get("commission_vitalicia", 10.0))
 
+    if "blink" in wallet_type or "blink.sv" in strike_handle.lower():
+        wallet_type = "blink"
+    else:
+        wallet_type = "strike"
+
     if not code or not name or not strike_handle:
-        return jsonify({"success": False, "error": "Código, nombre y usuario de Strike son obligatorios."}), 400
+        return jsonify({"success": False, "error": "Código, nombre y usuario de billetera (Strike o Blink) son obligatorios."}), 400
 
     db.create_or_update_ambassador(
         code=code,
@@ -565,9 +583,10 @@ def admin_create_ambassador():
         strike_handle=strike_handle,
         email=email,
         discount_usd=discount_usd,
-        commission_vitalicia=comm_vitalicia
+        commission_vitalicia=comm_vitalicia,
+        wallet_type=wallet_type
     )
-    return jsonify({"success": True, "message": f"Embajador {code} guardado con éxito."})
+    return jsonify({"success": True, "message": f"Embajador {code} ({wallet_type.upper()}) guardado con éxito."})
 
 @app.route("/admin/generar", methods=["POST"])
 def admin_generar_licencia():
