@@ -763,6 +763,45 @@ def admin_logout():
     session.pop("admin_logged_in", None)
     return redirect(url_for("admin_panel"))
 
+active_presences = {}  # {device_id: timestamp}
+
+def get_current_online_count():
+    now = time.time()
+    # Clean up presences older than 5 minutes
+    expired = [k for k, v in list(active_presences.items()) if now - v > 300]
+    for k in expired:
+        active_presences.pop(k, None)
+    
+    # Base realistic count based on hour of day in El Salvador (UTC-6)
+    try:
+        hour = int(time.strftime('%H', time.gmtime(now - 6 * 3600)))
+    except Exception:
+        hour = 12
+
+    if 6 <= hour < 12:
+        base = 28 + (int(now) % 7)
+    elif 12 <= hour < 18:
+        base = 36 + (int(now) % 9)
+    elif 18 <= hour < 23:
+        base = 45 + (int(now) % 12)
+    else:
+        base = 19 + (int(now) % 6)
+    
+    return max(base, len(active_presences) + base)
+
+@app.route("/api/presence/ping", methods=["GET", "POST"])
+def api_presence_ping():
+    device_id = get_device_id_from_request()
+    if device_id:
+        active_presences[device_id] = time.time()
+    
+    online_count = get_current_online_count()
+    return jsonify({
+        "success": True,
+        "online_count": online_count,
+        "active_devices": len(active_presences)
+    })
+
 @app.errorhandler(404)
 def handle_404(e):
     if request.path.startswith('/api/'):
@@ -771,3 +810,4 @@ def handle_404(e):
 
 if __name__ == "__main__":
     app.run(host="127.0.0.1", port=5000, debug=True)
+

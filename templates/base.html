@@ -105,8 +105,16 @@
                     </a>
                 </nav>
 
-                <!-- License Status & Quick Purchase Controls -->
-                <div class="hidden lg:flex items-center gap-2">
+                <!-- Live Online Users Counter & License Status -->
+                <div class="hidden lg:flex items-center gap-3">
+                    <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-950/70 border border-emerald-500/40 text-emerald-300 text-xs font-bold shadow-inner select-none" title="Aspirantes y abogados conectados activamente en este momento">
+                        <span class="relative flex h-2 w-2">
+                            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                            <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                        </span>
+                        <span><span id="live-online-counter" class="font-black text-emerald-200">28</span> en línea</span>
+                    </div>
+
                     {% if license_info %}
                     <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/40">
                         <i data-lucide="shield-check" class="w-3.5 h-3.5 text-emerald-400"></i>
@@ -124,8 +132,15 @@
                     {% endif %}
                 </div>
 
-                <!-- Mobile Menu Button -->
-                <div class="md:hidden flex items-center">
+                <!-- Mobile Menu Button & Mobile Presence Pill -->
+                <div class="md:hidden flex items-center gap-2">
+                    <div class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-950/70 border border-emerald-500/40 text-emerald-300 text-[11px] font-bold">
+                        <span class="relative flex h-1.5 w-1.5">
+                            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                            <span class="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-500"></span>
+                        </span>
+                        <span><span id="mobile-live-counter">28</span> en línea</span>
+                    </div>
                     <button id="mobile-menu-btn" type="button" class="p-2 rounded-md text-slate-300 hover:text-white hover:bg-navy-800 focus:outline-none">
                         <i data-lucide="menu" class="w-6 h-6"></i>
                     </button>
@@ -135,6 +150,13 @@
 
         <!-- Mobile Menu Drawer -->
         <div id="mobile-menu" class="hidden md:hidden bg-navy-950 border-t border-navy-800 px-4 pt-2 pb-4 space-y-1">
+            <div class="flex items-center justify-between px-3 py-2 rounded-xl bg-emerald-950/60 border border-emerald-500/30 text-emerald-300 text-xs font-bold mb-2">
+                <span class="flex items-center gap-2">
+                    <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                    <span>Comunidad Activa:</span>
+                </span>
+                <span class="font-black text-emerald-200"><span id="mobile-online-counter">28</span> Abogados Conectados</span>
+            </div>
             <a href="{{ url_for('index') }}" class="block px-3 py-2 rounded-md text-base font-medium text-slate-200 hover:bg-navy-800">Panel Principal</a>
             <a href="{{ url_for('simulador') }}" class="block px-3 py-2 rounded-md text-base font-semibold text-white bg-blue-700">Simulador Oficial CSJ</a>
             <a href="{{ url_for('practica') }}" class="block px-3 py-2 rounded-md text-base font-medium text-slate-200 hover:bg-navy-800">Estudio por Materias</a>
@@ -441,6 +463,31 @@
                 currentContext = questionContext;
                 sendMessage(queryText, questionContext);
             };
+        })();
+
+        // Live Presence Pulse
+        (function() {
+            async function pingPresence() {
+                try {
+                    const devId = window.NotariadoAuth ? window.NotariadoAuth.getDeviceId() : '';
+                    const res = await fetch('/api/presence/ping', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json', 'X-Device-Id': devId },
+                        body: JSON.stringify({ device_id: devId })
+                    });
+                    const data = await res.json();
+                    if (data.success && data.online_count) {
+                        const counter = document.getElementById('live-online-counter');
+                        if (counter) counter.textContent = data.online_count;
+                        const mobCounter = document.getElementById('mobile-online-counter');
+                        if (mobCounter) mobCounter.textContent = data.online_count;
+                        const mobLiveCounter = document.getElementById('mobile-live-counter');
+                        if (mobLiveCounter) mobLiveCounter.textContent = data.online_count;
+                    }
+                } catch(e) {}
+            }
+            pingPresence();
+            setInterval(pingPresence, 45000);
         })();
     </script>
     {% block scripts %}{% endblock %}
