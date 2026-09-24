@@ -391,6 +391,25 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    // Expose AI Question helper in Exam Mode
+    window.askCurrentExamQuestionToAI = function() {
+        if (!questions || questions.length === 0 || currentIndex >= questions.length) return;
+        const q = questions[currentIndex];
+        const promptText = `Por favor analízame la siguiente pregunta de examen de notariado: "${q.question}". ¿Cuáles son las disposiciones legales de El Salvador aplicables y qué consideraciones doctrinales debo tener presentes para resolverla?`;
+        
+        if (typeof window.openAIAssistantWithContext === 'function') {
+            window.openAIAssistantWithContext(promptText);
+        } else {
+            const drawer = document.getElementById('ai-assistant-drawer');
+            const input = document.getElementById('ai-assistant-input');
+            if (drawer && input) {
+                drawer.classList.remove('hidden');
+                input.value = promptText;
+                if (typeof window.sendAIMessage === 'function') window.sendAIMessage();
+            }
+        }
+    };
+
     // Start
     initExam();
 });

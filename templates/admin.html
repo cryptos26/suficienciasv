@@ -332,7 +332,7 @@
                             <th class="px-5 py-3.5">Clave de Acceso</th>
                             <th class="px-5 py-3.5">Plan</th>
                             <th class="px-5 py-3.5">Estado</th>
-                            <th class="px-5 py-3.5">Dispositivo Vinculado</th>
+                            <th class="px-5 py-3.5">Dispositivos Vinculados (máx. 2)</th>
                             <th class="px-5 py-3.5">Fecha Emisión</th>
                             <th class="px-5 py-3.5">Fecha Activación</th>
                             <th class="px-5 py-3.5 text-right">Acción Soporte</th>
@@ -350,7 +350,7 @@
                             <td class="px-5 py-3.5">
                                 {% if lic.is_claimed %}
                                 <span class="px-3 py-1 rounded-full text-xs sm:text-sm font-bold bg-blue-100 text-blue-800">
-                                    Vinculada a Dispositivo
+                                    En Uso
                                 </span>
                                 {% else %}
                                 <span class="px-3 py-1 rounded-full text-xs sm:text-sm font-bold bg-emerald-100 text-emerald-800">
@@ -360,17 +360,21 @@
                             </td>
                             <td class="px-5 py-3.5 font-mono text-slate-500 text-xs sm:text-sm">
                                 {% if lic.device_id %}
-                                <span class="truncate max-w-[150px] inline-block" title="{{ lic.device_id }}">{{ lic.device_id[:16] }}...</span>
+                                {% set dev_list = lic.device_id.split(',') %}
+                                <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-indigo-50 border border-indigo-200 text-indigo-900 font-bold">
+                                    <i data-lucide="smartphone" class="w-3.5 h-3.5"></i> {{ dev_list|length }} / 2 activos
+                                </span>
+                                <div class="text-[11px] text-slate-400 mt-1 truncate max-w-[150px]" title="{{ lic.device_id }}">{{ lic.device_id }}</div>
                                 {% else %}
-                                <span class="text-slate-300">—</span>
+                                <span class="text-slate-400 font-medium">0 / 2 (Sin activar)</span>
                                 {% endif %}
                             </td>
                             <td class="px-5 py-3.5 text-slate-600 text-xs sm:text-sm">{{ lic.created_at[:10] }}</td>
                             <td class="px-5 py-3.5 text-slate-600 text-xs sm:text-sm">{{ lic.claimed_at or '—' }}</td>
                             <td class="px-5 py-3.5 text-right space-x-1.5">
                                 {% if lic.is_claimed %}
-                                <button onclick="resetDevice('{{ lic.id or lic.license_key }}')" class="px-3 py-1.5 rounded-lg bg-amber-100 hover:bg-amber-200 text-amber-950 border border-amber-300 font-bold text-xs sm:text-sm transition-colors" title="Libera la clave si el estudiante cambió de computadora">
-                                     Liberar Dispositivo
+                                <button onclick="resetDevice('{{ lic.id or lic.license_key }}')" class="px-3 py-1.5 rounded-lg bg-amber-100 hover:bg-amber-200 text-amber-950 border border-amber-300 font-bold text-xs sm:text-sm transition-colors" title="Libera los dispositivos si el estudiante cambió de computadora o celular">
+                                     Liberar Dispositivos
                                 </button>
                                 {% endif %}
                                 <button onclick="copySingleKey('{{ lic.license_key }}')" class="px-3 py-1.5 rounded-lg bg-slate-200 hover:bg-slate-300 text-slate-800 font-bold text-xs sm:text-sm transition-colors">
@@ -391,7 +395,7 @@
 {% block scripts %}
 <script>
     function copySingleKey(key) {
-        const message = `¡Hola Licenciado(a)! Gracias por tu pago.\nTu clave de acceso premium al Simulador de Notariado CSJ es:\n\n*${key}*\n\nIngresa y actívala en tu computadora aquí:\nhttps://suficienciasv.vercel.app/activar\n\n(Recuerda que por seguridad queda vinculada a un solo dispositivo). ¡Muchos éxitos en tu estudio!`;
+        const message = `¡Hola Licenciado(a)! Gracias por tu compra.\nTu clave de acceso al Simulador de Notariado CSJ es:\n\n*${key}*\n\nIngresa y actívala aquí:\nhttps://suficienciasv.vercel.app/activar\n\n*Beneficio:* Tu clave es válida para *2 dispositivos simultáneos* (ej. tu computadora y tu celular/tablet). ¡Muchos éxitos en tu preparación notarial!`;
         navigator.clipboard.writeText(message).then(() => {
             alert('¡Mensaje con clave copiado al portapapeles!\nListo para pegar en WhatsApp.');
         });

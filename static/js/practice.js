@@ -235,6 +235,25 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
+    // Expose AI Question helper
+    window.askCurrentPracticeQuestionToAI = function() {
+        if (!questions || questions.length === 0 || currentIndex >= questions.length) return;
+        const q = questions[currentIndex];
+        const promptText = `Explícame el caso #${q.id}: "${q.question.substring(0, 100)}...". ¿Por qué la opción ${q.correct_option} es la correcta según ${q.legal_basis} y en qué fallan los demás distractores?`;
+        
+        if (typeof window.openAIAssistantWithContext === 'function') {
+            window.openAIAssistantWithContext(promptText);
+        } else {
+            const drawer = document.getElementById('ai-assistant-drawer');
+            const input = document.getElementById('ai-assistant-input');
+            if (drawer && input) {
+                drawer.classList.remove('hidden');
+                input.value = promptText;
+                if (typeof window.sendAIMessage === 'function') window.sendAIMessage();
+            }
+        }
+    };
+
     // Start
     loadPracticeQuestions(currentCategory);
 });

@@ -310,9 +310,9 @@ def init_db():
 
 # --- LICENSE AND SINGLE-DEVICE RESTRICTION FUNCTIONS ---
 
-def validate_or_activate_license(license_key, device_id):
+def validate_or_activate_license(license_key, device_id, max_devices=2):
     """
-    Validates a license key and binds it to a SINGLE device.
+    Validates a license key and binds it to up to `max_devices` (default 2) devices.
     Supports Firestore first, with fallback to SQLite.
     """
     if not license_key or not device_id:
@@ -321,6 +321,11 @@ def validate_or_activate_license(license_key, device_id):
     license_key = license_key.strip().upper()
     device_id = device_id.strip()
     now_str = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+    def parse_devices(dev_field):
+        if not dev_field:
+            return []
+        return [d.strip() for d in str(dev_field).split(",") if d.strip()]
 
     # --- 1. Firestore Attempt ---
     if HAS_FIREBASE:
@@ -332,37 +337,48 @@ def validate_or_activate_license(license_key, device_id):
                 if not lic.get("is_active", True):
                     return {"success": False, "error": "Esta clave de licencia ha sido desactivada por el administrador."}
 
-                # Case 1: Key is already claimed
-                if lic.get("is_claimed", False):
-                    if lic.get("device_id") != device_id:
-                        return {
-                            "success": False,
-                            "error": "Esta clave de licencia ya está vinculada a otro dispositivo. Por directrices de seguridad, la licencia es personal e intransferible a un solo equipo.",
-                            "is_locked_other_device": True
-                        }
-                    else:
-                        doc_ref.update({"last_seen_at": now_str})
-                        return {
-                            "success": True,
-                            "message": "Licencia verificada en este dispositivo.",
-                            "plan_type": lic.get("plan_type", "vitalicia"),
-                            "duration_days": lic.get("duration_days", -1),
-                            "claimed_at": lic.get("claimed_at")
-                        }
+                current_devices = parse_devices(lic.get("device_id"))
 
-                # Case 2: New / unclaimed -> bind to this device
-                doc_ref.update({
-                    "is_claimed": True,
-                    "claimed_at": now_str,
-                    "device_id": device_id,
-                    "last_seen_at": now_str
-                })
+                # Already verified on this device
+                if device_id in current_devices:
+                    doc_ref.update({"last_seen_at": now_str})
+                    return {
+                        "success": True,
+                        "message": f"Licencia verificada en este dispositivo ({len(current_devices)} de {max_devices} autorizados).",
+                        "plan_type": lic.get("plan_type", "vitalicia"),
+                        "duration_days": lic.get("duration_days", -1),
+                        "claimed_at": lic.get("claimed_at"),
+                        "device_count": len(current_devices),
+                        "max_devices": max_devices
+                    }
+
+                # New device, capacity available (< max_devices)
+                if len(current_devices) < max_devices:
+                    current_devices.append(device_id)
+                    new_dev_str = ",".join(current_devices)
+                    doc_ref.update({
+                        "is_claimed": True,
+                        "claimed_at": lic.get("claimed_at") or now_str,
+                        "device_id": new_dev_str,
+                        "last_seen_at": now_str
+                    })
+                    return {
+                        "success": True,
+                        "message": f"¡Licencia activada con éxito en este dispositivo ({len(current_devices)} de {max_devices} autorizados)!",
+                        "plan_type": lic.get("plan_type", "vitalicia"),
+                        "duration_days": lic.get("duration_days", -1),
+                        "claimed_at": lic.get("claimed_at") or now_str,
+                        "device_count": len(current_devices),
+                        "max_devices": max_devices
+                    }
+
+                # Maximum reached (>= max_devices)
                 return {
-                    "success": True,
-                    "message": "¡Licencia activada con éxito y vinculada a este dispositivo!",
-                    "plan_type": lic.get("plan_type", "vitalicia"),
-                    "duration_days": lic.get("duration_days", -1),
-                    "claimed_at": now_str
+                    "success": False,
+                    "error": f"Esta clave de licencia ya ha alcanzado el límite máximo de {max_devices} dispositivos autorizados (ej. tu computadora y tu celular). Si necesitas transferir tu acceso a un nuevo equipo, por favor contacta a soporte técnico.",
+                    "is_locked_other_device": True,
+                    "device_count": len(current_devices),
+                    "max_devices": max_devices
                 }
         except Exception as e:
             print(f"[FIREBASE ERROR] validate_or_activate_license: {e}")
@@ -383,75 +399,88 @@ def validate_or_activate_license(license_key, device_id):
             conn.close()
             return {"success": False, "error": "Esta clave de licencia ha sido desactivada por el administrador."}
 
-        if lic["is_claimed"]:
-            if lic["device_id"] != device_id:
-                conn.close()
-                return {
-                    "success": False,
-                    "error": "Esta clave de licencia ya está vinculada a otro dispositivo. Por directrices de seguridad, la licencia es personal e intransferible a un solo equipo.",
-                    "is_locked_other_device": True
-                }
-            else:
-                try:
-                    cursor.execute("UPDATE licenses SET last_seen_at = ? WHERE id = ?", (now_str, lic["id"]))
-                    conn.commit()
-                except Exception:
-                    pass
-                conn.close()
-                return {
-                    "success": True,
-                    "message": "Licencia verificada en este dispositivo.",
-                    "plan_type": lic["plan_type"],
-                    "duration_days": lic["duration_days"],
-                    "claimed_at": lic["claimed_at"]
-                }
+        current_devices = parse_devices(lic.get("device_id"))
 
-        # Unclaimed -> bind permanently
-        try:
-            cursor.execute("""
-                UPDATE licenses
-                SET is_claimed = 1,
-                    claimed_at = ?,
-                    device_id = ?,
-                    last_seen_at = ?
-                WHERE id = ?
-            """, (now_str, device_id, now_str, lic["id"]))
-            conn.commit()
-        except Exception as ex:
-            print(f"[DATABASE WRITE ERROR] {ex}")
-        conn.close()
-
-        # If Firebase is active, also sync to Firestore
-        if HAS_FIREBASE:
+        # Case A: This device is already registered
+        if device_id in current_devices:
             try:
-                firestore_client.collection("licenses").document(license_key).set({
-                    "license_key": license_key,
-                    "plan_type": lic["plan_type"],
-                    "duration_days": lic["duration_days"],
-                    "created_at": lic.get("created_at", now_str),
-                    "is_active": True,
-                    "is_claimed": True,
-                    "claimed_at": now_str,
-                    "device_id": device_id,
-                    "last_seen_at": now_str,
-                    "notes": lic.get("notes", "")
-                })
+                cursor.execute("UPDATE licenses SET last_seen_at = ? WHERE id = ?", (now_str, lic["id"]))
+                conn.commit()
             except Exception:
                 pass
+            conn.close()
+            return {
+                "success": True,
+                "message": f"Licencia verificada en este dispositivo ({len(current_devices)} de {max_devices} autorizados).",
+                "plan_type": lic["plan_type"],
+                "duration_days": lic["duration_days"],
+                "claimed_at": lic["claimed_at"],
+                "device_count": len(current_devices),
+                "max_devices": max_devices
+            }
 
+        # Case B: New device, capacity available (< max_devices)
+        if len(current_devices) < max_devices:
+            current_devices.append(device_id)
+            new_dev_str = ",".join(current_devices)
+            first_claimed_at = lic["claimed_at"] or now_str
+            try:
+                cursor.execute("""
+                    UPDATE licenses
+                    SET is_claimed = 1,
+                        claimed_at = COALESCE(claimed_at, ?),
+                        device_id = ?,
+                        last_seen_at = ?
+                    WHERE id = ?
+                """, (first_claimed_at, new_dev_str, now_str, lic["id"]))
+                conn.commit()
+            except Exception as ex:
+                print(f"[DATABASE WRITE ERROR] {ex}")
+            conn.close()
+
+            # If Firebase is active, also sync to Firestore
+            if HAS_FIREBASE:
+                try:
+                    firestore_client.collection("licenses").document(license_key).set({
+                        "license_key": license_key,
+                        "plan_type": lic["plan_type"],
+                        "duration_days": lic["duration_days"],
+                        "created_at": lic.get("created_at", now_str),
+                        "is_active": True,
+                        "is_claimed": True,
+                        "claimed_at": first_claimed_at,
+                        "device_id": new_dev_str,
+                        "last_seen_at": now_str,
+                        "notes": lic.get("notes", "")
+                    })
+                except Exception:
+                    pass
+
+            return {
+                "success": True,
+                "message": f"¡Licencia activada con éxito en este dispositivo ({len(current_devices)} de {max_devices} autorizados)!",
+                "plan_type": lic["plan_type"],
+                "duration_days": lic["duration_days"],
+                "claimed_at": first_claimed_at,
+                "device_count": len(current_devices),
+                "max_devices": max_devices
+            }
+
+        # Case C: Reached max devices (>= max_devices)
+        conn.close()
         return {
-            "success": True,
-            "message": "¡Licencia activada con éxito y vinculada a este dispositivo!",
-            "plan_type": lic["plan_type"],
-            "duration_days": lic["duration_days"],
-            "claimed_at": now_str
+            "success": False,
+            "error": f"Esta clave de licencia ya ha alcanzado el límite máximo de {max_devices} dispositivos autorizados (ej. tu computadora y tu celular). Si necesitas transferir tu acceso a un nuevo equipo, por favor contacta a soporte técnico.",
+            "is_locked_other_device": True,
+            "device_count": len(current_devices),
+            "max_devices": max_devices
         }
     except Exception as e:
         print(f"[DATABASE ERROR] validate_or_activate_license: {e}")
         return {"success": False, "error": "Error interno al procesar licencia."}
 
 def check_device_license(device_id):
-    """Checks if a device has an active bound license."""
+    """Checks if a device has an active bound license (supports multiple devices per key)."""
     if not device_id:
         return None
 
@@ -459,25 +488,24 @@ def check_device_license(device_id):
 
     if HAS_FIREBASE:
         try:
-            docs = firestore_client.collection("licenses")\
-                .where("device_id", "==", dev_clean)\
-                .stream()
+            docs = firestore_client.collection("licenses").where("is_active", "==", True).where("is_claimed", "==", True).stream()
             for doc in docs:
                 data = doc.to_dict()
-                if data.get("is_active", True) and data.get("is_claimed", False):
+                dev_list = [d.strip() for d in str(data.get("device_id", "")).split(",") if d.strip()]
+                if dev_clean in dev_list:
                     return data
         except Exception as e:
             print(f"[FIREBASE ERROR] check_device_license: {e}")
-
 
     try:
         conn = get_db_connection()
         cursor = conn.cursor()
         cursor.execute("""
             SELECT * FROM licenses 
-            WHERE device_id = ? AND is_active = 1 AND is_claimed = 1
+            WHERE (device_id = ? OR instr(',' || device_id || ',', ',' || ? || ',') > 0)
+              AND is_active = 1 AND is_claimed = 1
             ORDER BY id DESC LIMIT 1
-        """, (dev_clean,))
+        """, (dev_clean, dev_clean))
         row = cursor.fetchone()
         conn.close()
         return dict(row) if row else None

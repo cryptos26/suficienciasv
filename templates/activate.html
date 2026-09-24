@@ -39,14 +39,24 @@
             </div>
             {% endif %}
 
-            <!-- Single Device Notice -->
-            <div class="p-5 rounded-xl border border-blue-100 bg-blue-50/70 text-blue-900 space-y-2">
-                <div class="font-bold flex items-center gap-2 text-blue-950 text-base sm:text-lg">
-                    <i data-lucide="smartphone" class="w-5 h-5 text-blue-700"></i> Vinculación a Dispositivo Único:
+            <!-- 2-Device Policy Notice -->
+            <div class="p-5 rounded-xl border border-blue-200 bg-blue-50/80 text-blue-900 space-y-2">
+                <div class="font-bold flex items-center justify-between text-blue-950 text-base sm:text-lg">
+                    <span class="flex items-center gap-2">
+                        <i data-lucide="smartphone" class="w-5 h-5 text-blue-700"></i>
+                        <span>Válida para 2 Dispositivos Autorizados:</span>
+                    </span>
+                    <span class="px-2.5 py-0.5 rounded-full bg-blue-200 text-blue-900 font-extrabold text-xs">
+                        2 Dispositivos por Clave
+                    </span>
                 </div>
                 <p class="leading-relaxed text-base">
-                    Por políticas de seguridad y derechos de autor, al activar tu clave se vinculará de forma exclusiva e intransferible a esta computadora o dispositivo. No se permite el uso simultáneo en otros equipos.
+                    Por políticas de seguridad y flexibilidad de estudio, tu clave te autoriza a activar y estudiar simultáneamente en <strong>hasta dos (2) dispositivos</strong> de tu propiedad (por ejemplo: tu computadora de estudio y tu teléfono celular o tablet).
                 </p>
+                <div class="text-xs text-blue-800 font-medium flex items-center gap-1.5 pt-1">
+                    <i data-lucide="info" class="w-4 h-4 text-blue-600"></i>
+                    <span>Para activar en tu segundo equipo, simplemente ingresa la misma clave en ese navegador.</span>
+                </div>
             </div>
 
             <!-- Activation Form -->
@@ -79,7 +89,7 @@
                         class="mt-1 w-5 h-5 rounded border-slate-300 text-blue-600 focus:ring-blue-500 cursor-pointer shrink-0"
                     >
                     <label for="terms-check" class="leading-relaxed cursor-pointer select-none text-base">
-                        Acepto los <a href="/terminos" target="_blank" class="text-blue-700 font-bold underline hover:text-blue-900">Términos de Licencia y Descargo Integral de Responsabilidad</a>, entendiendo que este simulador no tiene vínculo oficial con la CSJ y que la clave quedará vinculada permanentemente a este único dispositivo.
+                        Acepto los <a href="/terminos" target="_blank" class="text-blue-700 font-bold underline hover:text-blue-900">Términos de Licencia y Descargo Integral de Responsabilidad</a>, entendiendo que este simulador no tiene vínculo oficial con la CSJ y que la clave quedará vinculada a un máximo de 2 dispositivos autorizados.
                     </label>
                 </div>
 
@@ -92,7 +102,7 @@
                     class="w-full py-4 rounded-xl bg-blue-700 hover:bg-blue-600 text-white font-bold text-base shadow-md transition-all flex items-center justify-center gap-2"
                 >
                     <i data-lucide="shield-check" class="w-5 h-5 text-gold-500"></i>
-                    <span>Activar y Vincular Dispositivo</span>
+                    <span>Activar Dispositivo (Hasta 2 Autorizados)</span>
                 </button>
             </form>
 
@@ -101,7 +111,7 @@
                 <div class="text-base text-slate-600 font-medium">¿Aún no tienes tu clave de acceso premium?</div>
                 <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
                     <a 
-                        href="https://wa.me/50370000000?text=Hola,%20deseo%20adquirir%20mi%20clave%20de%20acceso%20para%20el%20Simulador%20de%20Notariado%20CSJ." 
+                        href="https://wa.me/50372659216?text=Hola,%20deseo%20adquirir%20mi%20clave%20de%20acceso%20para%20el%20Simulador%20de%20Notariado%20CSJ." 
                         target="_blank"
                         class="px-6 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-base shadow transition-colors flex items-center gap-2"
                     >
@@ -174,10 +184,23 @@
                     }, 1500);
                 } else {
                     feedback.className = 'p-4 rounded-xl text-base font-semibold bg-rose-100 text-rose-900 border border-rose-300 leading-relaxed';
-                    feedback.innerHTML = `<strong>Error de Activación:</strong> ${data.error}`;
+                    let errorHtml = `<div><strong>Error de Activación:</strong> ${data.error}</div>`;
+                    if (data.is_locked_other_device) {
+                        const escMsg = encodeURIComponent(`Hola Soporte Técnico SuficienciaSV, necesito asistencia:\n- Clave: ${key}\n- Dispositivo actual: ${deviceId}\n- Motivo: Límite de 2 dispositivos alcanzado, requiero transferir mi acceso a este nuevo equipo.`);
+                        errorHtml += `
+                            <div class="mt-3 pt-3 border-t border-rose-300 flex flex-col sm:flex-row gap-2 items-center justify-between">
+                                <span class="text-xs text-rose-800">¿Cambiaste de equipo o necesitas desvincular un dispositivo anterior?</span>
+                                <a href="https://wa.me/50372659216?text=${escMsg}" target="_blank" class="w-full sm:w-auto px-4 py-2 bg-rose-800 hover:bg-rose-900 text-white rounded-lg text-xs font-bold shadow flex items-center justify-center gap-1.5 transition-colors">
+                                    <i data-lucide="message-circle" class="w-4 h-4"></i>
+                                    <span>Solicitar Ayuda a Soporte Humano</span>
+                                </a>
+                            </div>
+                        `;
+                    }
+                    feedback.innerHTML = errorHtml;
                     feedback.classList.remove('hidden');
                     btn.disabled = false;
-                    btn.innerHTML = `<i data-lucide="shield-check" class="w-5 h-5 text-gold-500"></i> <span>Activar y Vincular Dispositivo</span>`;
+                    btn.innerHTML = `<i data-lucide="shield-check" class="w-5 h-5 text-gold-500"></i> <span>Reintentar Activación</span>`;
                     lucide.createIcons();
                 }
             } catch (err) {

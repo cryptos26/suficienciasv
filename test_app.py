@@ -153,5 +153,42 @@ class TestNotariadoSimulador(unittest.TestCase):
         self.assertEqual(comm_b.get('wallet_type'), 'blink')
         self.assertIn('pay.blink.sv/robertoblink', comm_b.get('payout_url', ''))
 
+    def test_ai_assistant_legal_and_escalation(self):
+        # 1. Test legal notarial question
+        resp1 = self.client.post('/api/ai/ask', json={'query': 'Cuáles son los plazos para entregar el libro de protocolo a la CSJ?'})
+        self.assertEqual(resp1.status_code, 200)
+        data1 = resp1.get_json()
+        self.assertTrue(data1['success'])
+        self.assertIn('Protocolo', data1['response'])
+        self.assertFalse(data1['escalate'])
+
+        # 2. Test technical escalation to human
+        resp2 = self.client.post('/api/ai/ask', json={
+            'query': 'Tengo mi licencia bloqueada en mi computadora y necesito ayuda humano asesor',
+            'device_id': 'dev_test_999',
+            'license_key': 'NOT-VITA-TEST-KEY'
+        })
+        self.assertEqual(resp2.status_code, 200)
+        data2 = resp2.get_json()
+        self.assertTrue(data2['success'])
+        self.assertTrue(data2['escalate'])
+        self.assertIsNotNone(data2['whatsapp_url'])
+        self.assertIn('wa.me', data2['whatsapp_url'])
+
+    def test_ambassador_quick_link(self):
+        # Test quick 1-click promoter link generation without mandatory pre-registration
+        resp = self.client.post('/api/ambassadors/quick-link', json={
+            'code': 'PROMO-INSTANT-01',
+            'wallet_type': 'strike',
+            'strike_handle': 'mariolegal'
+        })
+        self.assertEqual(resp.status_code, 200)
+        data = resp.get_json()
+        self.assertTrue(data['success'])
+        self.assertEqual(data['code'], 'PROMO-INSTANT-01')
+        self.assertIn('checkout?ref=PROMO-INSTANT-01', data['share_url'])
+        self.assertIn('api.whatsapp.com', data['whatsapp_url'])
+
 if __name__ == '__main__':
     unittest.main()
+

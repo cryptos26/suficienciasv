@@ -4,6 +4,8 @@ import database as db
 import payment_config
 import urllib.parse
 import os
+import re
+import ai_assistant
 
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))
 app = Flask(
@@ -358,8 +360,25 @@ def api_referral_validate():
         return jsonify({"valid": False, "error": "Ingresa un código"}), 400
 
     amb = db.get_ambassador(code)
+    # Habilitar promotores sin registro obligatorio (registro al vuelo)
     if not amb:
-        return jsonify({"valid": False, "error": "El código colegiado no existe o no está activo."}), 404
+        clean_code = re.sub(r'[^A-Za-z0-9\-_]', '', code).upper()
+        if len(clean_code) >= 3:
+            db.create_or_update_ambassador(
+                code=clean_code,
+                name=f"Promotor {clean_code}",
+                strike_handle=clean_code.lower(),
+                email="",
+                discount_usd=5.0,
+                commission_vitalicia=5.0,
+                commission_trimestral=5.0,
+                commission_mensual=3.0,
+                wallet_type="strike"
+            )
+            amb = db.get_ambassador(clean_code)
+
+    if not amb:
+        return jsonify({"valid": False, "error": "El código colegiado no es válido."}), 404
 
     discount = 5.0 if plan in ["vitalicia", "90_dias"] else 3.0
     prices = {"30_dias": 19.99, "90_dias": 34.99, "vitalicia": 34.99}
@@ -369,13 +388,78 @@ def api_referral_validate():
     return jsonify({
         "valid": True,
         "code": amb["code"],
-        "ambassador_name": amb.get("name", "Embajador Notarial"),
+        "ambassador_name": amb.get("name", "Promotor Notarial"),
         "strike_handle": amb.get("strike_handle", ""),
         "discount": discount,
         "original_price": base_price,
         "discounted_price": discounted,
-        "message": f"¡Código colegiado aplicado! Descuento de ${discount:.2f} gracias a {amb.get('name', 'Embajador')}."
+        "message": f"¡Código colegiado aplicado! Descuento de ${discount:.2f} gracias a {amb.get('name', 'Promotor')}."
     })
+
+@app.route("/api/ambassadors/quick-link", methods=["POST"])
+def api_ambassadors_quick_link():
+    """Generador instantáneo de enlaces de promotor sin registro obligatorio."""
+    data = request.get_json() or {}
+    raw_code = data.get("code", "").strip() or data.get("strike_handle", "").strip()
+    wallet_type = data.get("wallet_type", "strike").strip().lower()
+    wallet_handle = data.get("strike_handle", "").strip() or raw_code
+
+    if not raw_code:
+        return jsonify({"success": False, "error": "Por favor ingresa tu código deseado o usuario de billetera."}), 400
+
+    clean_code = re.sub(r'[^A-Za-z0-9\-_]', '', raw_code).upper()
+    if len(clean_code) < 3:
+        return jsonify({"success": False, "error": "El código debe tener al menos 3 caracteres alfanuméricos."}), 400
+
+    existing = db.get_ambassador(clean_code)
+    if not existing:
+        db.create_or_update_ambassador(
+            code=clean_code,
+            name=f"Promotor {clean_code}",
+            strike_handle=wallet_handle.lstrip("@"),
+            email="",
+            discount_usd=5.0,
+            commission_vitalicia=5.0,
+            commission_trimestral=5.0,
+            commission_mensual=3.0,
+            wallet_type="blink" if "blink" in wallet_type else "strike"
+        )
+        existing = db.get_ambassador(clean_code)
+
+    share_url = f"https://suficienciasv.vercel.app/checkout?ref={clean_code}"
+    wa_msg = (
+        f"¡Hola colega! Te comparto un descuento exclusivo de $5.00 USD para el Simulador Notariado CSJ 2026. "
+        f"Usa mi código de colega *{clean_code}* o ingresa directamente aquí:\n{share_url}\n"
+        f"Incluye casos reales CSJ, avance automático en 1 pantalla y acceso vitalicio en hasta 2 dispositivos (PC y móvil). ¡Éxitos en la preparación!"
+    )
+
+    return jsonify({
+        "success": True,
+        "code": clean_code,
+        "share_url": share_url,
+        "whatsapp_url": f"https://api.whatsapp.com/send?text={urllib.parse.quote(wa_msg)}",
+        "message": f"¡Enlace de promotor {clean_code} generado con éxito y listo para compartir!"
+    })
+
+@app.route("/api/ai/ask", methods=["POST"])
+def api_ai_ask():
+    """Asistente Jurídico Notarial con IA y Escalamiento a Humano."""
+    data = request.get_json() or {}
+    query = data.get("query", "").strip()
+    question_context = data.get("question_context")
+    device_id = data.get("device_id") or get_device_id_from_request()
+    license_key = data.get("license_key", "").strip()
+
+    if not query:
+        return jsonify({"success": False, "error": "Por favor ingresa una pregunta o consulta."}), 400
+
+    result = ai_assistant.process_ai_query(
+        user_query=query,
+        question_context=question_context,
+        device_id=device_id,
+        license_key=license_key
+    )
+    return jsonify(result)
 
 @app.route("/embajadores")
 def embajadores():
@@ -452,8 +536,25 @@ def api_checkout_process():
     amount = prices.get(plan_type, 34.99)
     duration = durations.get(plan_type, -1)
 
-    # Check for Ambassador Referral Code & apply discount
-    ambassador = db.get_ambassador(referral_code) if referral_code else None
+    # Check for Ambassador Referral Code & apply discount (auto-register on the fly if needed)
+    ambassador = None
+    if referral_code:
+        ambassador = db.get_ambassador(referral_code)
+        if not ambassador:
+            clean_code = re.sub(r'[^A-Za-z0-9\-_]', '', referral_code).upper()
+            if len(clean_code) >= 3:
+                db.create_or_update_ambassador(
+                    code=clean_code,
+                    name=f"Promotor {clean_code}",
+                    strike_handle=clean_code.lower(),
+                    email="",
+                    discount_usd=5.0,
+                    commission_vitalicia=5.0,
+                    commission_trimestral=5.0,
+                    commission_mensual=3.0,
+                    wallet_type="strike"
+                )
+                ambassador = db.get_ambassador(clean_code)
     discount_usd = 0.0
     if ambassador:
         discount_usd = 5.0 if plan_type in ["vitalicia", "90_dias"] else 3.0

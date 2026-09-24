@@ -28,26 +28,38 @@ class TestMonetizationAndLicensing(unittest.TestCase):
         self.client = app.test_client()
         self.client.testing = True
 
-    def test_single_device_restriction(self):
+    def test_two_device_restriction(self):
         dev1 = f"device_pc_{uuid.uuid4().hex[:6]}"
-        dev2 = f"device_pc_{uuid.uuid4().hex[:6]}"
+        dev2 = f"device_phone_{uuid.uuid4().hex[:6]}"
+        dev3 = f"device_tablet_{uuid.uuid4().hex[:6]}"
 
         # Generate a test license
-        lic = db.admin_create_license(plan_type="vitalicia", duration_days=-1, notes="Test Single Device")
+        lic = db.admin_create_license(plan_type="vitalicia", duration_days=-1, notes="Test Two Devices")
         key = lic["key"]
 
-        # Device 1 activates key
+        # Device 1 activates key (1st device)
         res1 = db.validate_or_activate_license(key, dev1)
         self.assertTrue(res1["success"], "Device 1 should successfully activate")
+        self.assertEqual(res1.get("device_count"), 1)
 
-        # Device 2 tries to activate the same key
+        # Device 2 activates the same key (2nd device allowed)
         res2 = db.validate_or_activate_license(key, dev2)
-        self.assertFalse(res2["success"], "Device 2 must be REJECTED (single device lock)")
-        self.assertTrue(res2.get("is_locked_other_device"), "Should flag that key is locked to other device")
+        self.assertTrue(res2["success"], "Device 2 should also successfully activate (2 devices allowed)")
+        self.assertEqual(res2.get("device_count"), 2)
 
-        # Device 1 accesses again
-        res3 = db.validate_or_activate_license(key, dev1)
-        self.assertTrue(res3["success"], "Device 1 must be accepted again on subsequent checks")
+        # Device 3 tries to activate the same key (3rd device must be REJECTED)
+        res3 = db.validate_or_activate_license(key, dev3)
+        self.assertFalse(res3["success"], "Device 3 must be REJECTED (max 2 devices limit)")
+        self.assertTrue(res3.get("is_locked_other_device"), "Should flag that key has reached device limit")
+
+        # Both Device 1 and Device 2 can re-access without issues
+        self.assertTrue(db.validate_or_activate_license(key, dev1)["success"])
+        self.assertTrue(db.validate_or_activate_license(key, dev2)["success"])
+
+        # Check check_device_license for all three
+        self.assertIsNotNone(db.check_device_license(dev1))
+        self.assertIsNotNone(db.check_device_license(dev2))
+        self.assertIsNone(db.check_device_license(dev3))
 
     def test_automated_checkout_option_1(self):
         dev = f"laptop_carlos_{uuid.uuid4().hex[:6]}"
@@ -129,10 +141,15 @@ class TestMonetizationAndLicensing(unittest.TestCase):
         self.assertEqual(data_val["discount"], 5.0)
         self.assertEqual(data_val["discounted_price"], 29.99)
 
-        # 2. Test validate non-existent ambassador
-        res_fake = self.client.get("/api/referral/validate?code=CODIGO-FALSO-999&plan=vitalicia")
-        self.assertEqual(res_fake.status_code, 404)
-        self.assertFalse(res_fake.get_json()["valid"])
+        # 2. Test validate un-registered promoter (frictionless promoter mode: auto-registers and grants discount)
+        res_new_promoter = self.client.get("/api/referral/validate?code=PROMOTOR-ESPONTANEO&plan=vitalicia")
+        self.assertEqual(res_new_promoter.status_code, 200)
+        self.assertTrue(res_new_promoter.get_json()["valid"])
+        self.assertEqual(res_new_promoter.get_json()["discount"], 5.0)
+
+        # 3. Test empty code returns 400
+        res_empty = self.client.get("/api/referral/validate?code=&plan=vitalicia")
+        self.assertEqual(res_empty.status_code, 400)
 
         # 3. Process checkout with referral code
         dev = f"dev_ref_{uuid.uuid4().hex[:6]}"

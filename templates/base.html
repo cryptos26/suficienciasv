@@ -180,12 +180,98 @@
                 </div>
             </div>
             <div class="pt-4 text-center md:text-left text-base text-slate-300 leading-relaxed">
-                <strong>Descargo de Responsabilidad (Disclaimer):</strong> Este simulador es una herramienta de estudio académica independiente, sin vínculo oficial, patrocinio ni representación de la Corte Suprema de Justicia (CSJ) ni de la Comisión de Abogacía y Notariado de El Salvador. Cada licencia adquirida es de uso personal, no transferible y queda vinculada a un solo dispositivo. Las comisiones del Programa de Embajadores se liquidan en USD vía Strike netas de cualquier comisión o tarifa de enrutamiento por uso de la red Lightning.
+                <strong>Descargo de Responsabilidad (Disclaimer):</strong> Este simulador es una herramienta de estudio académica independiente, sin vínculo oficial, patrocinio ni representación de la Corte Suprema de Justicia (CSJ) ni de la Comisión de Abogacía y Notariado de El Salvador. Cada licencia adquirida es de uso personal, no transferible y queda vinculada a hasta dos (2) dispositivos autorizados (ej. computadora y celular). Las comisiones del Programa de Embajadores se liquidan en USD vía Strike/Blink netas de cualquier comisión o tarifa de enrutamiento por uso de la red Lightning.
             </div>
         </div>
     </footer>
 
-    <!-- Initialize Lucide Icons -->
+    <!-- ========================================== -->
+    <!-- ASISTENTE JURÍDICO NOTARIAL IA & ESCALAMIENTO -->
+    <!-- ========================================== -->
+    <div id="ai-assistant-container" class="fixed bottom-5 right-5 z-50">
+        <!-- Floating Toggle Button -->
+        <button id="ai-toggle-btn" class="flex items-center gap-2 px-4 py-3 rounded-full bg-navy-900 hover:bg-navy-800 text-white shadow-2xl border-2 border-gold-500/80 transition-all hover:scale-105 active:scale-95 group focus:outline-none">
+            <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
+            <div class="w-7 h-7 rounded-full bg-gold-500 text-navy-950 flex items-center justify-center font-bold text-sm shadow">
+                ⚖️
+            </div>
+            <span class="font-bold text-sm text-gold-400 group-hover:text-gold-300">Asistente IA</span>
+            <span class="hidden sm:inline text-xs text-slate-300 font-medium border-l border-slate-700 pl-2">Leyes & Soporte</span>
+        </button>
+
+        <!-- Floating Chat Window -->
+        <div id="ai-chat-window" class="hidden absolute bottom-14 right-0 w-[92vw] sm:w-[420px] max-h-[85vh] h-[580px] bg-white rounded-2xl shadow-2xl border-2 border-slate-300 flex flex-col overflow-hidden animate-in fade-in slide-in-from-bottom-4 duration-200">
+            <!-- Header -->
+            <div class="bg-navy-900 text-white p-3.5 border-b-2 border-gold-500 flex items-center justify-between">
+                <div class="flex items-center gap-2.5">
+                    <div class="w-8 h-8 rounded-lg bg-navy-800 border border-gold-500/50 flex items-center justify-center text-gold-400 font-bold text-base">
+                        ⚖️
+                    </div>
+                    <div>
+                        <div class="font-bold text-sm text-white flex items-center gap-1.5">
+                            <span>Asistente Jurídico IA</span>
+                            <span class="text-[10px] bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 px-1.5 py-0.2 rounded font-semibold">CSJ 2026</span>
+                        </div>
+                        <div class="text-[11px] text-slate-300">Resuelve dudas legales & soporte técnico</div>
+                    </div>
+                </div>
+                <div class="flex items-center gap-1.5">
+                    <!-- Botón Escalar a Humano -->
+                    <a id="ai-header-human-btn" href="https://wa.me/50372659216?text=Hola,%20necesito%20asistencia%20humana%20con%20el%20Simulador%20SuficienciaSV" target="_blank" class="px-2 py-1 rounded bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/40 text-[11px] font-bold flex items-center gap-1 transition-colors" title="Contactar a Soporte Humano por WhatsApp">
+                        <span>👨‍💼 Humano</span>
+                    </a>
+                    <button id="ai-close-btn" class="p-1 rounded text-slate-400 hover:text-white hover:bg-navy-800 transition-colors">
+                        <i data-lucide="x" class="w-5 h-5"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Quick Suggestion Chips -->
+            <div class="bg-slate-50 border-b border-slate-200 p-2 flex gap-1.5 overflow-x-auto text-[11px] whitespace-nowrap scrollbar-thin">
+                <button onclick="window.sendAIQuickPrompt('¿Cuáles son los plazos para entregar el protocolo a la Sección del Notariado?')" class="px-2 py-1 bg-white hover:bg-blue-50 border border-slate-300 text-slate-700 hover:text-blue-700 rounded-lg transition-colors font-medium">
+                    📅 Plazos del Protocolo
+                </button>
+                <button onclick="window.sendAIQuickPrompt('¿Cuándo es obligatoria la presencia de dos testigos instrumentales según el Art. 34 LN?')" class="px-2 py-1 bg-white hover:bg-blue-50 border border-slate-300 text-slate-700 hover:text-blue-700 rounded-lg transition-colors font-medium">
+                    👥 Testigos y Analfabetos
+                </button>
+                <button onclick="window.sendAIQuickPrompt('¿Cuáles son las prohibiciones por parentesco del Art. 9 de la Ley de Notariado?')" class="px-2 py-1 bg-white hover:bg-blue-50 border border-slate-300 text-slate-700 hover:text-blue-700 rounded-lg transition-colors font-medium">
+                    🚫 Prohibiciones Art. 9
+                </button>
+                <button onclick="window.sendAIQuickPrompt('Tengo dudas con mi licencia o necesito cambiar de dispositivo')" class="px-2 py-1 bg-amber-50 hover:bg-amber-100 border border-amber-300 text-amber-900 rounded-lg transition-colors font-bold">
+                    🔧 Soporte de Licencia
+                </button>
+            </div>
+
+            <!-- Messages Log -->
+            <div id="ai-messages" class="flex-1 p-3.5 overflow-y-auto space-y-3 text-xs sm:text-sm bg-slate-50/50">
+                <!-- Welcome Bot Message -->
+                <div class="flex gap-2.5 items-start">
+                    <div class="w-7 h-7 rounded-full bg-navy-900 text-gold-400 flex items-center justify-center shrink-0 font-bold text-xs mt-0.5">
+                        ⚖️
+                    </div>
+                    <div class="bg-white p-3 rounded-2xl rounded-tl-sm border border-slate-200 shadow-sm max-w-[88%] text-slate-800 leading-relaxed space-y-1.5">
+                        <div class="font-bold text-navy-900 text-xs sm:text-sm">¡Hola, futuro Notario(a)!</div>
+                        <p class="text-xs text-slate-700">
+                            Soy tu <strong>Asistente Jurídico Notarial con IA</strong>. Puedo explicarte cualquier pregunta de examen, artículos de la Ley de Notariado, Código Civil o resolver tus dudas.
+                        </p>
+                        <p class="text-xs text-slate-500 italic">
+                            Si tienes problemas técnicos con tu licencia o pagos, también puedo enlazarte con soporte humano de inmediato.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Input Form -->
+            <div class="p-2.5 bg-white border-t border-slate-200 flex items-center gap-2">
+                <textarea id="ai-input" rows="1" placeholder="Pregunta sobre leyes, casos o pide ayuda técnica..." class="flex-1 resize-none px-3 py-2 text-xs sm:text-sm rounded-xl border border-slate-300 focus:border-navy-900 focus:outline-none max-h-24"></textarea>
+                <button id="ai-send-btn" class="p-2.5 rounded-xl bg-navy-900 hover:bg-navy-800 text-gold-400 hover:text-gold-300 shadow transition-colors disabled:opacity-50">
+                    <i data-lucide="send" class="w-4 h-4"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Initialize Lucide Icons & Global Scripts -->
     <script>
         lucide.createIcons();
         const menuBtn = document.getElementById('mobile-menu-btn');
@@ -195,6 +281,167 @@
                 mobileMenu.classList.toggle('hidden');
             });
         }
+
+        // --- AI ASSISTANT WIDGET LOGIC ---
+        (function() {
+            const toggleBtn = document.getElementById('ai-toggle-btn');
+            const chatWindow = document.getElementById('ai-chat-window');
+            const closeBtn = document.getElementById('ai-close-btn');
+            const sendBtn = document.getElementById('ai-send-btn');
+            const inputField = document.getElementById('ai-input');
+            const messagesContainer = document.getElementById('ai-messages');
+
+            let currentContext = null;
+
+            function toggleChat() {
+                chatWindow.classList.toggle('hidden');
+                if (!chatWindow.classList.contains('hidden')) {
+                    inputField.focus();
+                    lucide.createIcons();
+                }
+            }
+
+            if (toggleBtn) toggleBtn.addEventListener('click', toggleChat);
+            if (closeBtn) closeBtn.addEventListener('click', toggleChat);
+
+            function formatMarkdown(text) {
+                if (!text) return '';
+                let escaped = text
+                    .replace(/&/g, '&amp;')
+                    .replace(/</g, '&lt;')
+                    .replace(/>/g, '&gt;');
+                
+                // Bold
+                escaped = escaped.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+                // Italic
+                escaped = escaped.replace(/_(.*?)_/g, '<em>$1</em>');
+                // Code / badge
+                escaped = escaped.replace(/`([^`]+)`/g, '<code class="bg-slate-100 text-blue-800 px-1 py-0.5 rounded font-mono text-[11px]">$1</code>');
+                // Line breaks
+                escaped = escaped.replace(/\n\n/g, '<br><br>').replace(/\n/g, '<br>');
+                return escaped;
+            }
+
+            function appendMessage(sender, content, isEscalate = false, whatsappUrl = null) {
+                const isUser = sender === 'user';
+                const msgWrapper = document.createElement('div');
+                msgWrapper.className = `flex gap-2.5 items-start ${isUser ? 'flex-row-reverse' : ''}`;
+
+                const avatar = document.createElement('div');
+                avatar.className = `w-7 h-7 rounded-full flex items-center justify-center shrink-0 font-bold text-xs mt-0.5 ${
+                    isUser ? 'bg-blue-700 text-white' : 'bg-navy-900 text-gold-400'
+                }`;
+                avatar.innerHTML = isUser ? '👤' : '⚖️';
+
+                const bubble = document.createElement('div');
+                bubble.className = `p-3 rounded-2xl border shadow-sm max-w-[88%] text-xs sm:text-sm leading-relaxed ${
+                    isUser 
+                        ? 'bg-blue-700 text-white rounded-tr-sm border-blue-600' 
+                        : 'bg-white text-slate-800 rounded-tl-sm border-slate-200'
+                }`;
+
+                bubble.innerHTML = formatMarkdown(content);
+
+                // If escalation, append WhatsApp direct card
+                if (isEscalate && whatsappUrl) {
+                    const escCard = document.createElement('div');
+                    escCard.className = 'mt-3 p-3 rounded-xl bg-emerald-50 border border-emerald-300 text-emerald-950 space-y-2';
+                    escCard.innerHTML = `
+                        <div class="flex items-center gap-1.5 font-bold text-xs text-emerald-900">
+                            <span class="w-2 h-2 rounded-full bg-emerald-500 animate-ping"></span>
+                            <span>Asesor Humano Disponible</span>
+                        </div>
+                        <p class="text-[11px] text-emerald-800">
+                            Haz clic abajo para contactar directamente a Soporte Técnico por WhatsApp con tus datos de diagnóstico:
+                        </p>
+                        <a href="${whatsappUrl}" target="_blank" class="inline-flex items-center justify-center gap-1.5 w-full py-2 px-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-lg shadow transition-colors">
+                            <span>📲 Abrir Chat con Asesor Humano</span>
+                        </a>
+                    `;
+                    bubble.appendChild(escCard);
+                }
+
+                msgWrapper.appendChild(avatar);
+                msgWrapper.appendChild(bubble);
+                messagesContainer.appendChild(msgWrapper);
+                messagesContainer.scrollTop = messagesContainer.scrollHeight;
+                lucide.createIcons();
+            }
+
+            async function sendMessage(textToSend, context = null) {
+                const query = textToSend || inputField.value.trim();
+                if (!query) return;
+
+                if (!textToSend) inputField.value = '';
+                appendMessage('user', query);
+
+                // Loading indicator
+                const loadingDiv = document.createElement('div');
+                loadingDiv.id = 'ai-loading';
+                loadingDiv.className = 'flex gap-2.5 items-center text-xs text-slate-400 italic pl-9';
+                loadingDiv.innerHTML = '<span class="inline-block animate-spin mr-1">⚖️</span> Consultando jurisprudencia y leyes salvadoreñas...';
+                messagesContainer.appendChild(loadingDiv);
+                messagesContainer.scrollTop = messagesContainer.scrollHeight;
+
+                sendBtn.disabled = true;
+
+                const devId = window.NotariadoAuth ? window.NotariadoAuth.getDeviceId() : '';
+                const licKey = window.NotariadoAuth ? window.NotariadoAuth.getLicenseKey() : '';
+
+                try {
+                    const res = await fetch('/api/ai/ask', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            query: query,
+                            question_context: context || currentContext,
+                            device_id: devId,
+                            license_key: licKey
+                        })
+                    });
+                    const data = await res.json();
+                    const loader = document.getElementById('ai-loading');
+                    if (loader) loader.remove();
+
+                    if (data.success) {
+                        appendMessage('bot', data.response, data.escalate, data.whatsapp_url);
+                    } else {
+                        appendMessage('bot', data.error || 'Ocurrió un error al procesar tu consulta. Puedes contactar a soporte humano.');
+                    }
+                } catch(e) {
+                    const loader = document.getElementById('ai-loading');
+                    if (loader) loader.remove();
+                    appendMessage('bot', 'No se pudo conectar con el servidor. Revisa tu conexión a internet o contacta con un asesor humano.');
+                } finally {
+                    sendBtn.disabled = false;
+                }
+            }
+
+            if (sendBtn) sendBtn.addEventListener('click', () => sendMessage());
+            if (inputField) {
+                inputField.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                        e.preventDefault();
+                        sendMessage();
+                    }
+                });
+            }
+
+            window.sendAIQuickPrompt = function(promptText) {
+                if (chatWindow.classList.contains('hidden')) {
+                    chatWindow.classList.remove('hidden');
+                }
+                sendMessage(promptText);
+            };
+
+            window.openAIAssistantWithContext = function(queryText, questionContext) {
+                if (chatWindow.classList.contains('hidden')) {
+                    chatWindow.classList.remove('hidden');
+                }
+                currentContext = questionContext;
+                sendMessage(queryText, questionContext);
+            };
+        })();
     </script>
     {% block scripts %}{% endblock %}
 </body>

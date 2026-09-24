@@ -127,11 +127,64 @@
         </div>
     </div>
 
-    <!-- Registration Form for Ambassadors -->
+    <!-- Quick Frictionless Promoter Generator (No Mandatory Registration) -->
+    <div class="max-w-3xl mx-auto p-6 sm:p-8 rounded-3xl bg-gradient-to-br from-indigo-900 via-navy-950 to-slate-900 text-white shadow-2xl border border-indigo-500/30 space-y-6">
+        <div class="text-center space-y-2">
+            <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-400 text-slate-950 text-xs sm:text-sm font-black uppercase">
+                <i data-lucide="sparkles" class="w-4 h-4"></i> Habilitación Inmediata • Sin Registro Obligatorio
+            </div>
+            <h2 class="text-2xl sm:text-3xl font-black text-white">Generador Instantáneo de Enlace de Promotor</h2>
+            <p class="text-sm sm:text-base text-slate-300 max-w-xl mx-auto">
+                No requieres llenar formularios extensos ni contraseñas. Elige tu código personalizado y obtén tu enlace de promotor al instante para compartirlo por WhatsApp.
+            </p>
+        </div>
+
+        <div class="bg-white/10 p-5 sm:p-6 rounded-2xl border border-white/15 space-y-4 backdrop-blur-sm">
+            <div class="grid sm:grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-xs font-bold uppercase tracking-wider text-amber-300 mb-1">Tu Código o Alias (mínimo 3 letras):</label>
+                    <input type="text" id="quick-code-input" placeholder="Ej. LIC-RODRIGUEZ" class="w-full px-4 py-3 rounded-xl bg-white text-slate-900 font-mono font-bold uppercase text-base placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-amber-400">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold uppercase tracking-wider text-amber-300 mb-1">Tu Usuario Strike o Blink (Opcional):</label>
+                    <input type="text" id="quick-wallet-input" placeholder="@tu_usuario (opcional)" class="w-full px-4 py-3 rounded-xl bg-white text-slate-900 font-mono text-base placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-amber-400">
+                </div>
+            </div>
+
+            <button type="button" onclick="generateQuickPromoterLink()" class="w-full py-3.5 rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-950 font-black text-base shadow-lg transition-all flex items-center justify-center gap-2">
+                <i data-lucide="zap" class="w-5 h-5"></i>
+                <span>Generar Enlace de Promotor Inmediato</span>
+            </button>
+
+            <!-- Generated Result Box (hidden initially) -->
+            <div id="quick-result-box" class="hidden p-4 rounded-xl bg-emerald-950/80 border border-emerald-400/50 space-y-3">
+                <div class="flex items-center gap-2 text-emerald-300 font-bold text-sm sm:text-base">
+                    <i data-lucide="check-circle-2" class="w-5 h-5 text-emerald-400 shrink-0"></i>
+                    <span>¡Tu código está listo para usar y compartir!</span>
+                </div>
+                <div class="p-3 rounded-lg bg-black/40 border border-emerald-500/30 flex items-center justify-between gap-3">
+                    <span id="quick-generated-link" class="font-mono text-xs sm:text-sm text-emerald-200 truncate select-all"></span>
+                    <button type="button" onclick="copyQuickLink()" class="px-3 py-1.5 rounded-lg bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-xs shrink-0 transition-colors">
+                        Copiar Enlace
+                    </button>
+                </div>
+                <div class="flex flex-col sm:flex-row items-center gap-2 pt-1">
+                    <a id="quick-whatsapp-share" href="#" target="_blank" class="w-full sm:w-auto flex-1 py-2.5 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs sm:text-sm flex items-center justify-center gap-2 shadow transition-colors">
+                        <i data-lucide="share-2" class="w-4 h-4"></i> Compartir por WhatsApp con Descuento ($5.00 USD)
+                    </a>
+                </div>
+                <p class="text-xs text-slate-300 leading-relaxed">
+                    💡 <strong>¿Cómo funciona?</strong> Cuando tu colega use este enlace o digite tu código al pagar, obtendrá <strong>$5.00 de descuento</strong> en el Plan Vitalicio y el sistema te acreditará <strong>$5.00 de comisión</strong>. Puedes registrar tus datos bancarios o Lightning cuando desees liquidar tus fondos.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Registration Form for Ambassadors (Detailed) -->
     <div class="max-w-2xl mx-auto p-8 rounded-3xl bg-white border border-slate-200 shadow-xl space-y-6">
         <div class="text-center space-y-1">
-            <h2 class="text-2xl sm:text-3xl font-extrabold text-slate-900">Solicita tu Código de Embajador</h2>
-            <p class="text-base text-slate-600">Completa tus datos para activar tu código colegiado y empezar a ganar hoy mismo.</p>
+            <h2 class="text-2xl sm:text-3xl font-extrabold text-slate-900">Registro Completo de Embajador (Opcional)</h2>
+            <p class="text-base text-slate-600">Si deseas dejar configurada tu billetera Strike o Blink Wallet para liquidación directa automática, completa este formulario.</p>
         </div>
 
         <form id="ambassador-form" class="space-y-5">
@@ -241,6 +294,57 @@
             inputField.placeholder = 'tu_usuario_strike';
             helper.textContent = 'Tus pagos se liquidarán a: strike.me/tu_usuario';
         }
+    }
+
+    let latestGeneratedLink = '';
+
+    async function generateQuickPromoterLink() {
+        const codeInput = document.getElementById('quick-code-input');
+        const walletInput = document.getElementById('quick-wallet-input');
+        const resultBox = document.getElementById('quick-result-box');
+        const linkDisplay = document.getElementById('quick-generated-link');
+        const waBtn = document.getElementById('quick-whatsapp-share');
+
+        const code = codeInput.value.trim().toUpperCase();
+        const wallet = walletInput.value.trim();
+
+        if (!code || code.length < 3) {
+            alert('Por favor ingresa un código de al menos 3 caracteres (ej. NOTARIO2026).');
+            codeInput.focus();
+            return;
+        }
+
+        try {
+            const res = await fetch('/api/ambassadors/quick-link', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ code: code, wallet_handle: wallet })
+            });
+            const data = await res.json();
+            if (data.success) {
+                const fullUrl = window.location.origin + data.checkout_url;
+                latestGeneratedLink = fullUrl;
+                linkDisplay.textContent = fullUrl;
+                
+                const promoMsg = `¡Hola Colega! Te comparto un descuento exclusivo de $5.00 USD en el Simulador de Notariado El Salvador 2026 con mi código *${data.code}*.\n\nAccede y obtén tu descuento directo aquí:\n${fullUrl}\n\n(Incluye acceso en 2 dispositivos: Computadora y Celular).`;
+                waBtn.href = `https://api.whatsapp.com/send?text=${encodeURIComponent(promoMsg)}`;
+                
+                resultBox.classList.remove('hidden');
+                lucide.createIcons();
+            } else {
+                alert(data.error || 'Error al generar enlace.');
+            }
+        } catch (e) {
+            console.error(e);
+            alert('Error al conectar con el servidor.');
+        }
+    }
+
+    function copyQuickLink() {
+        if (!latestGeneratedLink) return;
+        navigator.clipboard.writeText(latestGeneratedLink).then(() => {
+            alert('¡Enlace de promotor copiado al portapapeles!');
+        });
     }
 
     document.getElementById('ambassador-form').addEventListener('submit', async (e) => {

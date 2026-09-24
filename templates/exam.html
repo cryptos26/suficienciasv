@@ -64,14 +64,20 @@
             <!-- Left: Question & Options Canvas (Cols 3) -->
             <div class="lg:col-span-3">
                 <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-4 sm:p-6">
-                    <!-- Category & Difficulty Badges -->
-                    <div class="flex items-center justify-between mb-3 pb-2 border-b border-slate-100">
-                        <span id="q-category" class="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full text-xs font-semibold bg-blue-50 text-blue-800 border border-blue-100">
-                            <i data-lucide="tag" class="w-3.5 h-3.5"></i> <span id="category-text">Ley de Notariado</span>
-                        </span>
-                        <span id="q-difficulty" class="text-xs font-medium text-slate-400">
-                            Dificultad: <span id="difficulty-text" class="font-semibold text-slate-600">Media</span>
-                        </span>
+                    <!-- Category & Difficulty Badges & AI Trigger -->
+                    <div class="flex items-center justify-between mb-3 pb-2 border-b border-slate-100 flex-wrap gap-2">
+                        <div class="flex items-center gap-2">
+                            <span id="q-category" class="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full text-xs font-semibold bg-blue-50 text-blue-800 border border-blue-100">
+                                <i data-lucide="tag" class="w-3.5 h-3.5"></i> <span id="category-text">Ley de Notariado</span>
+                            </span>
+                            <span id="q-difficulty" class="text-xs font-medium text-slate-400">
+                                Dificultad: <span id="difficulty-text" class="font-semibold text-slate-600">Media</span>
+                            </span>
+                        </div>
+                        <button type="button" onclick="askCurrentExamQuestionToAI()" class="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 text-indigo-800 text-xs font-bold transition-all shadow-sm" title="Consultar análisis jurídico al Asistente IA">
+                            <i data-lucide="bot" class="w-4 h-4 text-indigo-600"></i>
+                            <span>Asistente Jurídico IA</span>
+                        </button>
                     </div>
 
                     <!-- Case Scenario Text -->
