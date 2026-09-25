@@ -270,9 +270,11 @@ def init_db():
                 (cat["id"], cat["name"], cat["description"], cat["icon"])
             )
 
-    # Check if questions table is populated
+    # Check if questions table needs update
     cursor.execute("SELECT COUNT(*) FROM questions")
-    if cursor.fetchone()[0] == 0:
+    q_count = cursor.fetchone()[0]
+    if q_count < len(QUESTIONS):
+        cursor.execute("DELETE FROM questions")
         for q in QUESTIONS:
             cursor.execute("""
                 INSERT INTO questions (
@@ -285,9 +287,11 @@ def init_db():
                 q["justification"], q["distractors_analysis"], q["difficulty"]
             ))
 
-    # Check if flashcards table is populated
+    # Check if flashcards table needs update
     cursor.execute("SELECT COUNT(*) FROM flashcards")
-    if cursor.fetchone()[0] == 0:
+    f_count = cursor.fetchone()[0]
+    if f_count < len(FLASHCARDS):
+        cursor.execute("DELETE FROM flashcards")
         for f in FLASHCARDS:
             cursor.execute("""
                 INSERT INTO flashcards (category_id, title, prompt, legal_answer, legal_article)
