@@ -32,8 +32,11 @@ class VercelPathMiddleware:
 
 app.wsgi_app = VercelPathMiddleware(app.wsgi_app)
 
-# Ensure DB is initialized
-db.init_db()
+# Ensure DB is initialized safely
+try:
+    db.init_db()
+except Exception as e:
+    print(f"[APP CRITICAL] DB initialization error: {e}")
 
 @app.context_processor
 def inject_global_data():
