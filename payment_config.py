@@ -47,26 +47,26 @@ PLANS = {
         "description": "Repaso intensivo final para el mes previo a la prueba CSJ."
     },
     "vitalicia": {
-        "name": "Acceso Premium Total (Hasta Aprobar)",
+        "name": "Acceso Completo Convocatoria CSJ 2026 (Pago Único)",
         "price_usd": 34.99,
         "duration_days": -1,
-        "badge": "Oferta Especial CSJ 2026",
-        "description": "Acceso ilimitado y permanente sin fecha de caducidad a todas las materias, preguntas y casos prácticos hasta aprobar el examen CSJ."
+        "badge": "Pase Convocatoria CSJ 2026",
+        "description": "Acceso total sin mensualidades durante todo el ciclo de preparación para la prueba oficial de la Corte Suprema de Justicia 2026 y hasta la publicación de resultados."
     },
     # Alias de compatibilidad
     "60_dias": {
-        "name": "Acceso Premium Total (Hasta Aprobar)",
+        "name": "Acceso Completo Convocatoria CSJ 2026 (Pago Único)",
         "price_usd": 34.99,
         "duration_days": -1,
-        "badge": "Oferta Especial CSJ 2026",
-        "description": "Acceso ilimitado y permanente sin fecha de caducidad a todas las materias, preguntas y casos prácticos hasta aprobar el examen CSJ."
+        "badge": "Pase Convocatoria CSJ 2026",
+        "description": "Acceso total sin mensualidades durante todo el ciclo de preparación para la prueba oficial de la Corte Suprema de Justicia 2026 y hasta la publicación de resultados."
     },
     "90_dias": {
-        "name": "Acceso Premium Total (Hasta Aprobar)",
+        "name": "Acceso Completo Convocatoria CSJ 2026 (Pago Único)",
         "price_usd": 34.99,
         "duration_days": -1,
-        "badge": "Oferta Especial CSJ 2026",
-        "description": "Acceso ilimitado y permanente sin fecha de caducidad a todas las materias, preguntas y casos prácticos hasta aprobar el examen CSJ."
+        "badge": "Pase Convocatoria CSJ 2026",
+        "description": "Acceso total sin mensualidades durante todo el ciclo de preparación para la prueba oficial de la Corte Suprema de Justicia 2026 y hasta la publicación de resultados."
     }
 }
 
