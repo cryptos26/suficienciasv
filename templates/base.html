@@ -212,29 +212,32 @@
     <!-- ========================================== -->
     <div id="ai-assistant-container" class="fixed bottom-5 right-5 z-50">
         <!-- Floating Toggle Button -->
-        <button id="ai-toggle-btn" class="flex items-center gap-2 px-4 py-3 rounded-full bg-navy-900 hover:bg-navy-800 text-white shadow-2xl border-2 border-gold-500/80 transition-all hover:scale-105 active:scale-95 group focus:outline-none">
-            <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
-            <div class="w-7 h-7 rounded-full bg-gold-500 text-navy-950 flex items-center justify-center font-bold text-sm shadow">
-                ⚖️
+        <button id="ai-toggle-btn" class="flex items-center gap-2.5 pl-2 pr-4 py-2 rounded-full bg-navy-900 hover:bg-navy-800 text-white shadow-2xl border-2 border-gold-500 transition-all hover:scale-105 active:scale-95 group focus:outline-none">
+            <div class="relative w-8 h-8 rounded-full overflow-hidden border border-gold-400 shrink-0 shadow">
+                <img src="{{ url_for('static', filename='images/minerva_avatar.jpg') }}" alt="Minerva IA" class="w-full h-full object-cover">
+                <span class="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full bg-emerald-400 border-2 border-navy-900 animate-pulse"></span>
             </div>
-            <span class="font-bold text-sm text-gold-400 group-hover:text-gold-300">Asistente IA</span>
-            <span class="hidden sm:inline text-xs text-slate-300 font-medium border-l border-slate-700 pl-2">Leyes & Soporte</span>
+            <div class="flex flex-col text-left">
+                <span class="font-extrabold text-sm text-gold-400 group-hover:text-gold-300 leading-tight">Minerva IA</span>
+                <span class="text-[10px] text-slate-300 font-medium">Asistente Notarial</span>
+            </div>
         </button>
 
         <!-- Floating Chat Window -->
         <div id="ai-chat-window" class="hidden absolute bottom-14 right-0 w-[92vw] sm:w-[420px] max-h-[85vh] h-[580px] bg-white rounded-2xl shadow-2xl border-2 border-slate-300 flex flex-col overflow-hidden animate-in fade-in slide-in-from-bottom-4 duration-200">
             <!-- Header -->
-            <div class="bg-navy-900 text-white p-3.5 border-b-2 border-gold-500 flex items-center justify-between">
+            <div class="bg-navy-900 text-white p-3 sm:p-3.5 border-b-2 border-gold-500 flex items-center justify-between">
                 <div class="flex items-center gap-2.5">
-                    <div class="w-8 h-8 rounded-lg bg-navy-800 border border-gold-500/50 flex items-center justify-center text-gold-400 font-bold text-base">
-                        ⚖️
+                    <div class="relative w-9 h-9 rounded-full overflow-hidden border-2 border-gold-500 shadow shrink-0">
+                        <img src="{{ url_for('static', filename='images/minerva_avatar.jpg') }}" alt="Minerva IA" class="w-full h-full object-cover">
+                        <span class="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full bg-emerald-400 border-2 border-navy-900"></span>
                     </div>
                     <div>
                         <div class="font-bold text-sm text-white flex items-center gap-1.5">
-                            <span>Asistente Jurídico IA</span>
-                            <span class="text-[10px] bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 px-1.5 py-0.2 rounded font-semibold">CSJ 2026</span>
+                            <span>Minerva IA</span>
+                            <span class="text-[10px] bg-gold-500/20 text-gold-300 border border-gold-500/40 px-1.5 py-0.2 rounded font-semibold">Mentora CSJ</span>
                         </div>
-                        <div class="text-[11px] text-slate-300">Resuelve dudas legales & soporte técnico</div>
+                        <div class="text-[11px] text-slate-300">Asistente Jurídica Notarial de El Salvador</div>
                     </div>
                 </div>
                 <div class="flex items-center gap-1.5">
@@ -268,16 +271,22 @@
             <div id="ai-messages" class="flex-1 p-3.5 overflow-y-auto space-y-3 text-xs sm:text-sm bg-slate-50/50">
                 <!-- Welcome Bot Message -->
                 <div class="flex gap-2.5 items-start">
-                    <div class="w-7 h-7 rounded-full bg-navy-900 text-gold-400 flex items-center justify-center shrink-0 font-bold text-xs mt-0.5">
-                        ⚖️
+                    <div class="w-8 h-8 rounded-full overflow-hidden border border-gold-500/60 shrink-0 mt-0.5 shadow-sm">
+                        <img src="{{ url_for('static', filename='images/minerva_avatar.jpg') }}" alt="Minerva IA" class="w-full h-full object-cover">
                     </div>
                     <div class="bg-white p-3 rounded-2xl rounded-tl-sm border border-slate-200 shadow-sm max-w-[88%] text-slate-800 leading-relaxed space-y-1.5">
-                        <div class="font-bold text-navy-900 text-xs sm:text-sm">¡Hola, futuro Notario(a)!</div>
+                        <div class="font-bold text-navy-900 text-xs sm:text-sm flex items-center gap-1.5">
+                            <span>Minerva</span>
+                            <span class="text-[10px] font-normal text-slate-500">• Mentora Notarial</span>
+                        </div>
                         <p class="text-xs text-slate-700">
-                            Soy tu <strong>Asistente Jurídico Notarial con IA</strong>. Puedo explicarte cualquier pregunta de examen, artículos de la Ley de Notariado, Código Civil o resolver tus dudas.
+                            ¡Hola, colega aspirante al notariado! Soy <strong>Minerva</strong>, tu asistente de inteligencia artificial especializada en el marco normativo salvadoreño.
                         </p>
-                        <p class="text-xs text-slate-500 italic">
-                            Si tienes problemas técnicos con tu licencia o pagos, también puedo enlazarte con soporte humano de inmediato.
+                        <p class="text-xs text-slate-700">
+                            Puedo analizar cualquier caso práctico de examen, fundar artículos de la Ley de Notariado, Código Civil o resolver tus consultas legales.
+                        </p>
+                        <p class="text-[11px] text-slate-500 italic">
+                            Si tienes algún inconveniente técnico con tu clave o tus dispositivos, también puedo enlazar tu diagnóstico con soporte humano por WhatsApp.
                         </p>
                     </div>
                 </div>
@@ -350,10 +359,12 @@
                 msgWrapper.className = `flex gap-2.5 items-start ${isUser ? 'flex-row-reverse' : ''}`;
 
                 const avatar = document.createElement('div');
-                avatar.className = `w-7 h-7 rounded-full flex items-center justify-center shrink-0 font-bold text-xs mt-0.5 ${
-                    isUser ? 'bg-blue-700 text-white' : 'bg-navy-900 text-gold-400'
+                avatar.className = `w-7 h-7 rounded-full flex items-center justify-center shrink-0 font-bold text-xs mt-0.5 overflow-hidden shadow-sm ${
+                    isUser ? 'bg-blue-700 text-white' : 'border border-gold-500/60'
                 }`;
-                avatar.innerHTML = isUser ? '👤' : '⚖️';
+                avatar.innerHTML = isUser 
+                    ? '👤' 
+                    : '<img src="/static/images/minerva_avatar.jpg" alt="Minerva IA" class="w-full h-full object-cover">';
 
                 const bubble = document.createElement('div');
                 bubble.className = `p-3 rounded-2xl border shadow-sm max-w-[88%] text-xs sm:text-sm leading-relaxed ${
@@ -400,8 +411,8 @@
                 // Loading indicator
                 const loadingDiv = document.createElement('div');
                 loadingDiv.id = 'ai-loading';
-                loadingDiv.className = 'flex gap-2.5 items-center text-xs text-slate-400 italic pl-9';
-                loadingDiv.innerHTML = '<span class="inline-block animate-spin mr-1">⚖️</span> Consultando jurisprudencia y leyes salvadoreñas...';
+                loadingDiv.className = 'flex gap-2.5 items-center text-xs text-slate-500 italic pl-9';
+                loadingDiv.innerHTML = '<img src="/static/images/minerva_avatar.jpg" alt="Minerva" class="w-4 h-4 rounded-full inline-block animate-pulse border border-gold-500/60 mr-1.5"> <span>Minerva está analizando la legislación y jurisprudencia salvadoreña...</span>';
                 messagesContainer.appendChild(loadingDiv);
                 messagesContainer.scrollTop = messagesContainer.scrollHeight;
 
