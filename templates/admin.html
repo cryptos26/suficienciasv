@@ -61,13 +61,13 @@
             <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
                 <div>
                     <span class="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-amber-500 text-navy-950 text-xs sm:text-sm font-black uppercase tracking-wider mb-2">
-                        <i data-lucide="sparkles" class="w-4 h-4"></i> 10 Claves Promocionales Vitalicias Generadas
+                        <i data-lucide="sparkles" class="w-4 h-4"></i> 10 Claves Promocionales Convocatoria 2026
                     </span>
                     <h2 class="text-xl sm:text-2xl font-bold text-slate-900">
                         Lote Exclusivo de Lanzamiento VIP
                     </h2>
                     <p class="text-base text-slate-600 mt-1">
-                        Estas 10 claves otorgan acceso ilimitado de por vida y quedan vinculadas al primer dispositivo que las active.
+                        Estas 10 claves otorgan acceso completo para todo el ciclo de la Convocatoria CSJ 2026 en hasta 2 dispositivos.
                     </p>
                 </div>
                 <button 
@@ -119,10 +119,10 @@
                     <div class="text-sm text-slate-600 mt-1">Vigencia: 30 días tras activación</div>
                 </button>
 
-                <button onclick="generateKey('vitalicia', 'Licencia Premium Total')" class="p-4 rounded-xl border-2 border-amber-300 hover:border-amber-500 bg-amber-50/30 hover:bg-amber-50/60 text-left transition-all group">
+                <button onclick="generateKey('vitalicia', 'Acceso Completo Convocatoria CSJ 2026')" class="p-4 rounded-xl border-2 border-amber-300 hover:border-amber-500 bg-amber-50/30 hover:bg-amber-50/60 text-left transition-all group">
                     <div class="text-xs sm:text-sm font-extrabold text-amber-600 uppercase mb-1">+ 1 Clave</div>
-                    <div class="font-bold text-slate-900 text-base">Acceso Premium Total ($34.99)</div>
-                    <div class="text-sm text-slate-600 mt-1">Acceso permanente hasta aprobar CSJ</div>
+                    <div class="font-bold text-slate-900 text-base">Acceso Completo Convocatoria 2026 ($34.99)</div>
+                    <div class="text-sm text-slate-600 mt-1">Acceso durante todo el ciclo CSJ 2026</div>
                 </button>
 
                 <button onclick="generateBatch(10)" class="p-4 rounded-xl border-2 border-blue-200 bg-blue-50/70 hover:bg-blue-100/70 text-left transition-all">
@@ -431,7 +431,7 @@
     }
 
     async function generateBatch(count) {
-        if (!confirm(`¿Deseas generar un lote de ${count} claves vitalicias?`)) return;
+        if (!confirm(`¿Deseas generar un lote de ${count} claves para la Convocatoria CSJ 2026?`)) return;
         try {
             const res = await fetch('/admin/generar', {
                 method: 'POST',
@@ -440,7 +440,7 @@
             });
             const data = await res.json();
             if (data.success) {
-                alert(`¡Se han generado ${count} claves vitalicias exitosamente!`);
+                alert(`¡Se han generado ${count} claves para Convocatoria CSJ 2026 exitosamente!`);
                 location.reload();
             }
         } catch (e) {
