@@ -1,0 +1,9 @@
+notariado.db
+*.db
+tests/
+test_*.py
+seed_firestore.py
+generate_cards.py
+__pycache__/
+*.pyc
+serviceAccountKey.json
