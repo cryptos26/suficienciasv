@@ -9,16 +9,17 @@ ORIGINAL_DB_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), "nota
 DB_PATH = ORIGINAL_DB_PATH
 
 # En entornos Serverless de Vercel / Lambda, habilitar /tmp/notariado.db con permisos de escritura
-if os.environ.get("VERCEL") or os.environ.get("AWS_LAMBDA_FUNCTION_NAME") or os.environ.get("VERCEL_ENV"):
+IS_SERVERLESS = bool(os.environ.get("VERCEL") or os.environ.get("AWS_LAMBDA_FUNCTION_NAME") or os.environ.get("VERCEL_ENV"))
+
+if IS_SERVERLESS:
+    tmp_db = "/tmp/notariado.db"
     try:
-        tmp_db = "/tmp/notariado.db"
         if not os.path.exists(tmp_db) and os.path.exists(ORIGINAL_DB_PATH):
             import shutil
             shutil.copyfile(ORIGINAL_DB_PATH, tmp_db)
-        if os.path.exists(tmp_db):
-            DB_PATH = tmp_db
     except Exception as e:
         print(f"[DATABASE] /tmp init warning: {e}")
+    DB_PATH = tmp_db
 
 # --- INICIALIZACIÓN DE FIREBASE FIRESTORE ---
 HAS_FIREBASE = False
@@ -60,16 +61,17 @@ except Exception as e:
 
 def get_db_connection():
     global DB_PATH
-    if os.environ.get("VERCEL") or os.environ.get("AWS_LAMBDA_FUNCTION_NAME") or os.environ.get("VERCEL_ENV") or not os.access(os.path.dirname(DB_PATH) or ".", os.W_OK):
-        try:
-            tmp_db = "/tmp/notariado.db"
-            if not os.path.exists(tmp_db) and os.path.exists(ORIGINAL_DB_PATH):
+    if IS_SERVERLESS or os.environ.get("VERCEL") or os.environ.get("AWS_LAMBDA_FUNCTION_NAME") or os.environ.get("VERCEL_ENV"):
+        tmp_db = "/tmp/notariado.db"
+        if not os.path.exists(tmp_db) and os.path.exists(ORIGINAL_DB_PATH):
+            try:
                 import shutil
                 shutil.copyfile(ORIGINAL_DB_PATH, tmp_db)
-            if os.path.exists(tmp_db):
-                DB_PATH = tmp_db
-        except Exception as e:
-            print(f"[DATABASE] /tmp get_db_connection warning: {e}")
+            except Exception as e:
+                print(f"[DATABASE] /tmp get_db_connection copy warning: {e}")
+        DB_PATH = tmp_db
+    elif not os.access(os.path.dirname(DB_PATH) or ".", os.W_OK):
+        DB_PATH = "/tmp/notariado.db"
     conn = sqlite3.connect(DB_PATH, timeout=30.0)
     conn.row_factory = sqlite3.Row
     return conn
