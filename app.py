@@ -433,7 +433,7 @@ def api_ambassadors_quick_link():
     wa_msg = (
         f"¡Hola colega! Te comparto un descuento exclusivo de $5.00 USD para el Simulador Notariado CSJ 2026. "
         f"Usa mi código de colega *{clean_code}* o ingresa directamente aquí:\n{share_url}\n"
-        f"Incluye casos reales CSJ, avance automático en 1 pantalla y acceso vitalicio en hasta 2 dispositivos (PC y móvil). ¡Éxitos en la preparación!"
+        f"Incluye casos reales CSJ, avance automático en 1 pantalla y acceso completo para la Convocatoria CSJ 2026 en hasta 2 dispositivos (PC y móvil). ¡Éxitos en la preparación!"
     )
 
     return jsonify({
