@@ -17,18 +17,18 @@ except ImportError:
 
 from questions_seed import CATEGORIES, QUESTIONS, FLASHCARDS
 
-# 10 Claves Oficiales Promocionales Vitalicias
+# 10 Claves Oficiales Promocionales Vitalicias VIP (Tarjetas Oficiales)
 PROMO_KEYS = [
-    "NOT-VITA-ZTMA-BUQM",
-    "NOT-VITA-PXSW-ERUT",
-    "NOT-VITA-VP45-NZKP",
-    "NOT-VITA-UYAN-5RB3",
-    "NOT-VITA-EKUT-64X8",
-    "NOT-VITA-RNB7-QJNK",
-    "NOT-VITA-9P3A-MW2S",
-    "NOT-VITA-ZFZM-DKMJ",
-    "NOT-VITA-SGNS-Q9NE",
-    "NOT-VITA-PLVL-4T8V"
+    "NOT-VITA-SR6M-9F4W",
+    "NOT-VITA-F6FN-YW33",
+    "NOT-VITA-D33B-TQYA",
+    "NOT-VITA-FK5F-TGE7",
+    "NOT-VITA-Z6VV-AHAB",
+    "NOT-VITA-TVJT-Z6QX",
+    "NOT-VITA-LKLZ-AJW5",
+    "NOT-VITA-XTCD-JLRD",
+    "NOT-VITA-N34M-2FH6",
+    "NOT-VITA-GUK3-JTYZ"
 ]
 
 def get_firestore_client():
@@ -36,7 +36,24 @@ def get_firestore_client():
         return firestore.client()
 
     cred_env = os.environ.get("FIREBASE_SERVICE_ACCOUNT")
-    cred_file = os.path.join(os.path.dirname(__file__), "serviceAccountKey.json")
+    
+    cred_file = None
+    candidate_names = [
+        "serviceAccountKey.json",
+        "suficienciasv-firebase-adminsdk-fbsvc-c135eb5eac.json"
+    ]
+    base_dir = os.path.dirname(__file__)
+    for cname in candidate_names:
+        p = os.path.join(base_dir, cname)
+        if os.path.exists(p):
+            cred_file = p
+            break
+
+    if not cred_file:
+        import glob
+        matches = glob.glob(os.path.join(base_dir, "*adminsdk*.json"))
+        if matches:
+            cred_file = matches[0]
 
     if cred_env:
         try:
@@ -48,14 +65,14 @@ def get_firestore_client():
         except Exception as e:
             print(f"Error parseando FIREBASE_SERVICE_ACCOUNT: {e}")
             sys.exit(1)
-    elif os.path.exists(cred_file):
+    elif cred_file and os.path.exists(cred_file):
         cred = credentials.Certificate(cred_file)
         firebase_admin.initialize_app(cred)
-        print("[OK] Conectado a Firebase mediante serviceAccountKey.json")
+        print(f"[OK] Conectado a Firebase mediante {os.path.basename(cred_file)}")
         return firestore.client()
     else:
         print("\n[!] No se encontraron credenciales de Firebase.")
-        print("    Por favor coloca tu archivo 'serviceAccountKey.json' en esta carpeta")
+        print("    Por favor coloca tu archivo 'serviceAccountKey.json' o '*adminsdk*.json'")
         print("    o define la variable de entorno 'FIREBASE_SERVICE_ACCOUNT'.")
         sys.exit(1)
 
