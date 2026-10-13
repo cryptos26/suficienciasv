@@ -30,7 +30,25 @@ try:
     from firebase_admin import credentials, firestore
 
     cred_env = os.environ.get("FIREBASE_SERVICE_ACCOUNT")
-    cred_file = os.path.join(os.path.dirname(__file__), "serviceAccountKey.json")
+    
+    # Auto-detect credential file candidates
+    cred_file = None
+    candidate_names = [
+        "serviceAccountKey.json",
+        "suficienciasv-firebase-adminsdk-fbsvc-c135eb5eac.json"
+    ]
+    base_dir = os.path.dirname(__file__)
+    for cname in candidate_names:
+        p = os.path.join(base_dir, cname)
+        if os.path.exists(p):
+            cred_file = p
+            break
+
+    if not cred_file:
+        import glob
+        matches = glob.glob(os.path.join(base_dir, "*adminsdk*.json"))
+        if matches:
+            cred_file = matches[0]
 
     if cred_env:
         try:
@@ -43,16 +61,16 @@ try:
             print("[DATABASE] [OK] Conectado a Firebase Firestore (vía FIREBASE_SERVICE_ACCOUNT)")
         except Exception as ex:
             print(f"[DATABASE] Error en credencial env Firebase: {ex}")
-    elif os.path.exists(cred_file):
+    elif cred_file and os.path.exists(cred_file):
         try:
             cred = credentials.Certificate(cred_file)
             if not firebase_admin._apps:
                 firebase_admin.initialize_app(cred)
             firestore_client = firestore.client()
             HAS_FIREBASE = True
-            print("[DATABASE] [OK] Conectado a Firebase Firestore (vía serviceAccountKey.json)")
+            print(f"[DATABASE] [OK] Conectado a Firebase Firestore (vía {os.path.basename(cred_file)})")
         except Exception as ex:
-            print(f"[DATABASE] Error en archivo serviceAccountKey.json: {ex}")
+            print(f"[DATABASE] Error en archivo {os.path.basename(cred_file)}: {ex}")
     else:
         print("[DATABASE] Modo local: SQLite activado (notariado.db)")
 except Exception as e:
@@ -313,6 +331,34 @@ def init_db():
 
     conn.commit()
     conn.close()
+
+    # Si Firebase está activo, asegurar sincronización de las 10 claves VIP
+    if HAS_FIREBASE:
+        try:
+            VIP_KEYS = [
+                "NOT-VITA-SR6M-9F4W", "NOT-VITA-F6FN-YW33", "NOT-VITA-D33B-TQYA",
+                "NOT-VITA-FK5F-TGE7", "NOT-VITA-Z6VV-AHAB", "NOT-VITA-TVJT-Z6QX",
+                "NOT-VITA-LKLZ-AJW5", "NOT-VITA-XTCD-JLRD", "NOT-VITA-N34M-2FH6",
+                "NOT-VITA-GUK3-JTYZ"
+            ]
+            now_s = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            for i, key in enumerate(VIP_KEYS, start=1):
+                doc_ref = firestore_client.collection("licenses").document(key)
+                if not doc_ref.get().exists:
+                    doc_ref.set({
+                        "license_key": key,
+                        "plan_type": "vitalicia",
+                        "duration_days": -1,
+                        "created_at": now_s,
+                        "is_active": True,
+                        "is_claimed": False,
+                        "claimed_at": None,
+                        "device_id": None,
+                        "last_seen_at": None,
+                        "notes": f"Promocional Vitalicia VIP #{i}"
+                    })
+        except Exception as e:
+            print(f"[FIREBASE SYNC ERROR] init_db: {e}")
 
 # --- LICENSE AND SINGLE-DEVICE RESTRICTION FUNCTIONS ---
 
